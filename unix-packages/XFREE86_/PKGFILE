@@ -1,0 +1,44 @@
+# $Id:
+# Maintainer: Ryan Tolboom <rxt1077@njit.edu>
+
+# Installs XFree86 4.3 with NVidia Drivers
+# DOESN'T install non-needed things like man-pages
+name=xfree86-snapptix
+version=4.3
+release=1
+source=(ftp://ftp.xfree86.org/pub/XFree86/4.3.0/source/X430src-{1,2,3,4,5,6,7}.tgz
+	http://download.nvidia.com/XFree86_40/1.0-4191/NVIDIA_GLX-1.0-4191.tar.gz
+	xman.patch
+	xterm256.patch
+	host.def)
+
+build() {
+	# Make XFree86
+	cd xc
+    	patch -p1 < ../xman.patch
+        patch -p1 < ../xterm256.patch
+	sed "s/#CFLAGS#/$CFLAGS/" ../host.def > config/cf/host.def
+        make World
+	make DESTDIR=$PKG install
+#	make DESTDIR=$PKG install.man
+#	install -D -m 755 ../xdm $PKG/etc/rc.d/xdm
+        rm -rf $PKG/usr/X11R6/lib/X11/doc $PKG/var/lib/xkb/README \
+               $PKG/usr/include/GL $PKG/usr/lib
+#	ln -s ../X11R6/include/X11 $PKG/usr/include/X11
+#       ln -s ../X11R6/include/GL $PKG/usr/include/GL
+	mkdir -p $PKG/usr/lib
+	mv $PKG/usr/X11R6/lib/pkgconfig $PKG/usr/lib
+	chmod -R +w $PKG
+
+	# Make the NVidia drivers
+    	cd ../NVIDIA_GLX-1.0-4191
+	make ROOT=$PKG
+
+    	# Remove stuff we don't need 
+    	rm $PKG/usr/X11R6/bin/twm $PKG/usr/X11R6/bin/xdm $PKG/usr/X11R6/bin/xclock
+    	rm $PKG/usr/X11R6/bin/texteroids $PKG/usr/X11R6/bin/xbiff
+    	rm $PKG/usr/X11R6/bin/glxgears $PKG/usr/X11R6/bin/xeyes
+    	rm -rf $PKG/usr/X11R6/include
+    	rm -rf $PKG/etc/X11/twm $PKG/etc/X11/xdm
+    	rm -rf $PKG/var/lib/xdm
+}

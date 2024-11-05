@@ -1,0 +1,5 @@
+Janix
+Java-Unix Bridge
+Version 1.2
+
+Developed by Ben (Baruch) Speiser, with assistance from Ryan Tolboom

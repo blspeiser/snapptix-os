@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# /etc/rc: system boot script
+#
+
+# Start device management daemon
+/sbin/devfsd /dev
+
+# Mount filesystems
+/bin/mount -n -a &> /dev/null
+
+# Create /tmp/var
+/bin/mkdir /tmp/var
+/bin/chmod 0755 /tmp/var
+/bin/mkdir /var/lock /var/log /var/run /var/tmp
+/bin/touch /var/run/utmp
+
+# Start log daemons
+/usr/sbin/syslogd
+/usr/sbin/klogd -c 4
+
+# End of file

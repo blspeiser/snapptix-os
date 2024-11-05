@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.3 2003/02/03 18:09:53 jue Exp $
+# Description: Utility for incremental file transfers over networks
+# URL:         http://rsync.samba.org
+# Maintainer:  Ryan Tolboom <rxt1077@njit.edu>
+
+# NOTE: This version is a little more slimmed down, includes
+# 	a startup script, and an exclude list.
+
+name=rsync-snapptix
+version=2.5.6
+release=1
+source=(http://samba.anu.edu.au/ftp/$name/rsync-$version.tar.gz
+	rsyncd
+	rsyncd.exclude)
+
+build () {
+    cd rsync-$version
+    ./configure --with-rsh=ssh --with-included-popt --disable-debug --disable-ipv6 --disable-nls --prefix=/usr
+    make
+    make DESTDIR=$PKG install
+    mkdir -p $PKG/etc/rc.d
+    cp $SRC/rsyncd $PKG/etc/rc.d
+    cp $SRC/rsyncd.exclude $PKG/etc/
+    rm -rf $PKG/usr/man
+}

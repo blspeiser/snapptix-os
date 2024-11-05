@@ -1,0 +1,25 @@
+# $Id:
+# Maintainer: Ryan Tolboom <rxt1077@njit.edu>
+
+# Installs our Janix SSL layer from files provided by Ben
+name=janix
+version=0.0.1
+release=1
+source=(Janix.c
+	Janix.h
+	client.c
+	constants.h
+	utils.h
+	headers.h
+	SnappCert.pem)
+
+build() {
+	gcc -lssl Janix.c -o Janix
+	gcc -lssl client.c -o client
+	mkdir -p $PKG/etc/ssl/certs
+	mkdir -p $PKG/usr/bin
+	cp Janix $PKG/usr/bin
+	cp client $PKG/usr/bin
+	cp SnappCert.pem $PKG/etc/ssl/certs
+	mkdir -p $PKG/usr/share/Janix
+}

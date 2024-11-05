@@ -1,0 +1,27 @@
+# $Id: Pkgfile,v 1.6 2003/03/23 20:28:32 per Exp $
+# Maintainer: Ryan Tolboom <rxt1077@njit.edu>
+
+name=bsdinit-snapptix
+version=2.6
+release=1
+source=(inittab
+	rc
+	rc.modules
+	rc.single
+	rc.multi
+	rc.local
+	rc.shutdown
+	snapptix_start.sh)
+
+build() {
+    mkdir -p $PKG/etc/rc.d
+    install -m 644 inittab $PKG/etc
+    install -m 755 rc $PKG/etc
+    install -m 755 rc.modules $PKG/etc
+    install -m 755 rc.single $PKG/etc
+    install -m 755 rc.multi $PKG/etc
+    install -m 755 rc.local $PKG/etc
+    install -m 755 rc.shutdown $PKG/etc
+    mkdir -p $PKG/sbin
+    install -m 755 snapptix_start.sh $PKG/sbin
+}

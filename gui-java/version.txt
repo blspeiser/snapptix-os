@@ -1,0 +1,7 @@
+Java GUI
+Java Swing-based UI for Snapptix OS
+Developed in Borland JBuilder 9 with dependencies on custom JBuilder Swing layout libraries, JDK 1.3 (likely can no longer be compiled as-is). 
+Folder structure conformed to JBuilder module recommendations, for better or for worse.
+
+Developed by Ben (Baruch) Speiser, with assistance from Mehul Shah
+

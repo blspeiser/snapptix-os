@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# /etc/rc.d/rsync: start/stop rsync
+#
+
+if [ "$1" = "start" ]; then
+    /usr/bin/rsync --address=`hostname` --daemon
+elif [ "$1" = "stop" ]; then
+    killall rsync
+else
+    echo "usage: $0 start|stop"
+fi
+
+# End of file

@@ -1,0 +1,108 @@
+/lib/modules/2.4.20/kernel/drivers/block/drbd.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/3c501.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/3c503.o:	/lib/modules/2.4.20/kernel/drivers/net/8390.o
+
+/lib/modules/2.4.20/kernel/drivers/net/3c505.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/3c507.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/3c509.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/3c515.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/3c59x.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/8139cp.o:	/lib/modules/2.4.20/kernel/drivers/net/mii.o
+
+/lib/modules/2.4.20/kernel/drivers/net/8139too.o:	/lib/modules/2.4.20/kernel/drivers/net/mii.o
+
+/lib/modules/2.4.20/kernel/drivers/net/82596.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/8390.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/ac3200.o:	/lib/modules/2.4.20/kernel/drivers/net/8390.o
+
+/lib/modules/2.4.20/kernel/drivers/net/at1700.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/cs89x0.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/de4x5.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/depca.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/dgrs.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/dmfe.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/dummy.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/e100/e100.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/e2100.o:	/lib/modules/2.4.20/kernel/drivers/net/8390.o
+
+/lib/modules/2.4.20/kernel/drivers/net/eepro.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/eepro100.o:	/lib/modules/2.4.20/kernel/drivers/net/mii.o
+
+/lib/modules/2.4.20/kernel/drivers/net/eexpress.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/epic100.o:	/lib/modules/2.4.20/kernel/drivers/net/mii.o
+
+/lib/modules/2.4.20/kernel/drivers/net/eth16i.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/ewrk3.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/fealnx.o:	/lib/modules/2.4.20/kernel/drivers/net/mii.o
+
+/lib/modules/2.4.20/kernel/drivers/net/hp-plus.o:	/lib/modules/2.4.20/kernel/drivers/net/8390.o
+
+/lib/modules/2.4.20/kernel/drivers/net/hp.o:	/lib/modules/2.4.20/kernel/drivers/net/8390.o
+
+/lib/modules/2.4.20/kernel/drivers/net/hp100.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/lance.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/lp486e.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/mii.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/natsemi.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/ne.o:	/lib/modules/2.4.20/kernel/drivers/net/8390.o
+
+/lib/modules/2.4.20/kernel/drivers/net/ne2k-pci.o:	/lib/modules/2.4.20/kernel/drivers/net/8390.o
+
+/lib/modules/2.4.20/kernel/drivers/net/ni5010.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/ni52.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/ni65.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/pcnet32.o:	/lib/modules/2.4.20/kernel/drivers/net/mii.o
+
+/lib/modules/2.4.20/kernel/drivers/net/sis900.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/smc-ultra.o:	/lib/modules/2.4.20/kernel/drivers/net/8390.o
+
+/lib/modules/2.4.20/kernel/drivers/net/smc9194.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/starfire.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/sundance.o:	/lib/modules/2.4.20/kernel/drivers/net/mii.o
+
+/lib/modules/2.4.20/kernel/drivers/net/tc35815.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/tlan.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/tulip/tulip.o:
+
+/lib/modules/2.4.20/kernel/drivers/net/via-rhine.o:	/lib/modules/2.4.20/kernel/drivers/net/mii.o
+
+/lib/modules/2.4.20/kernel/drivers/net/wd.o:	/lib/modules/2.4.20/kernel/drivers/net/8390.o
+
+/lib/modules/2.4.20/kernel/drivers/net/winbond-840.o:	/lib/modules/2.4.20/kernel/drivers/net/mii.o
+
+/lib/modules/2.4.20/kernel/drivers/video/nvidia.o:
+

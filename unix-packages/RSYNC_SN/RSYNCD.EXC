@@ -1,0 +1,13 @@
+/home/
+/etc/rc.conf
+/etc/rc.d/net
+/etc/resolv.conf
+/etc/ha.d/ha.cf
+/etc/lilo.conf
+/etc/fstab
+/etc/X11/XF86Config
+/dev/
+/proc/
+/boot/
+/var/lib/drbd/
+/var/log/

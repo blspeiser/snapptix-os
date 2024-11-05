@@ -1,0 +1,255 @@
+#!/bin/bash
+#
+# CRUX 1.0 Setup
+#
+# Copyright (c) 2001-2002 by Per Liden <per@fukt.bth.se>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, 
+# USA.
+#
+
+VERSION="1.0"
+
+do_dialog() {
+    dialog --backtitle "CRUX $VERSION Setup" --no-shadow "$@"
+}
+
+do_abort() {
+    do_dialog --aspect 50 --defaultno --yesno "Abort installation?" 0 0 && exit 1
+}
+
+do_select() {
+    while true; do
+	do_dialog "$@"
+	if [ $? != 0 ]; then
+	    do_abort
+	else
+	    break
+	fi
+    done
+}
+
+welcome() {
+    do_select --aspect 5 --yesno "Welcome!\n\nThis script will guide you through the installation of CRUX packages.\n\nBefore starting the installation make sure you have read and understood the \"CRUX Installation Guide\". If you have done that then please continue, else abort the installation and come back later.\n\nAre you really sure you want to continue?" 0 0
+}
+
+select_action() {
+    do_select --menu "Select action:" 9 51 2 \
+	             "1" "Make a new CRUX $VERSION installation" \
+                     "2" "Upgrade an old CRUX installation to $VERSION" 2> $tmpfile
+    ACTION=`cat $tmpfile`
+    if [ "$ACTION" = "1" ]; then
+	ACTION="INSTALL"
+    else
+	ACTION="UPGRADE"
+	do_select --aspect 5 --yesno "NOTE!\n\nBefore upgrading make sure /etc/pkgadd.conf in the old installation is tuned to fit your needs. Otherwise important files might be overwritten. Further, when this script has completed the upgrade you need to go though the rejected files in /var/lib/pkg/rejected/ and upgrade them manually if needed. See the pkgadd(8) man page for more information about /etc/pkgadd.conf.\n\nAre you really sure you want to continue?" 0 0
+    fi
+}
+
+select_root() {
+    while true; do
+	do_select --aspect 40 --inputbox "Enter directory where your CRUX root partition is mounted:" 0 0 "/mnt" 2> $tmpfile
+	ROOT=`cat $tmpfile`
+	if [ -d "$ROOT" ]; then
+	    if [ "$ACTION" = "INSTALL" ] || [ -f "$ROOT/var/lib/pkg/db" ]; then
+		break
+	    fi
+	    do_dialog --aspect 50 --msgbox "Directory does not look like a CRUX root directory. Try again." 0 0
+	else
+	    do_dialog --aspect 50 --msgbox "Directory not found. Try again." 0 0
+	fi
+    done
+}
+
+select_packages() {
+    if [ ! -d base ] || [ ! -d opt ] || [ ! -d kernel ]; then
+	do_dialog --aspect 30 --msgbox "Package directories (base, opt and kernel) were not found in the current directory. Aborting." 0 0
+	exit 1
+    fi
+
+    do_dialog --aspect 50 --infobox "Searching for packages, please wait..." 0 0
+
+    if [ "$ACTION" = "INSTALL" ]; then
+	# Install
+	TITLE="Select packages to install:"
+	BASE_LIST=`find base -name '*.pkg.tar.gz' -printf '%f (base) ON\n' | sed 's/.pkg.tar.gz//g' | sort | xargs echo ' '`
+	OPT_LIST=`find opt -name '*.pkg.tar.gz' -printf '%f (opt) OFF\n' | sed 's/.pkg.tar.gz//g' | sort | xargs echo ' '`
+    else
+	# Upgrade
+	TITLE="Select packages to upgrade:"
+	INSTALLED_PACKAGES=`pkginfo -r $ROOT -i | gawk '{ print $1; }'`
+	for package in $INSTALLED_PACKAGES; do
+	    BASE_LIST="$BASE_LIST `find base -name \"${package}#*.pkg.tar.gz\" -printf '%f (base) ON\n' | sed 's/.pkg.tar.gz/ /g' | sort | xargs echo ' '`"
+	    OPT_LIST="$OPT_LIST `find opt -name \"${package}#*.pkg.tar.gz\" -printf '%f (opt) ON\n' | sed 's/.pkg.tar.gz/ /g' | sort | xargs echo ' '`"
+	done
+    fi
+    do_select --separate-output --checklist "$TITLE" 19 60 12 $BASE_LIST $OPT_LIST 2> $pkgfile
+}
+
+confirm() {
+    if [ "$ACTION" = "INSTALL" ]; then
+	# Install
+	do_select --aspect 25 --yesno "Selected packages will now be installed. Are you sure you want to continue?" 0 0
+    else
+	# Upgrade
+	do_select --aspect 25 --yesno "Selected packages will now be upgraded. Are you sure you want to continue?" 0 0
+    fi
+}
+
+progressbar() {
+    let $((COUNT+=1))
+    echo "XXX"
+    expr $COUNT '*' 100 / $TOTAL
+    echo "\n$*"
+    echo "XXX"
+}
+
+install_packages() {
+    if [ ! -d $ROOT/var/lib/pkg ]; then
+	mkdir -p $ROOT/var/lib/pkg
+	touch $ROOT/var/lib/pkg/db
+    fi
+
+    if [ -d $ROOT/var/lib/pkg/rejected ]; then
+	rm -rf $ROOT/var/lib/pkg/rejected
+    fi
+
+    if [ "$ACTION" = "INSTALL" ]; then
+	PKGARGS=""
+    else
+	# We use -f here since we want to avoid pkgadd conflicts.
+	# Unwanted/Unexpected conflicts could arise if files are
+	# moved from one package to another, or if the user added
+	# the files himself. Instead of failing the whole upgrade
+	# we force the upgrade. This should be fairly safe and it
+	# will probably help to avoid some "bogus" errors from
+	# pkgadd. The rules in /etc/pkgadd.conf will still be used.
+	# Time will tell if the use of -f is a wise choice or not.
+	PKGARGS="-f -u"
+    fi
+
+    (
+        # Log header
+	echo "Log ($logfile)" > $errfile
+	echo "----------------------------------------------------------" >> $errfile
+
+        # Install packages
+	KERNEL=./kernel/linux-*.tar.bz2
+	KERNEL_VERSION=`basename $KERNEL .tar.bz2 | sed "s/linux-//"`
+	TOTAL=`cat $pkgfile | wc -l`
+	let $((TOTAL+=2))
+	let $((COUNT=0))
+	let $((ERRORS=0))
+	for FILE in `cat $pkgfile`; do
+	    progressbar "Installing $FILE..."
+	    echo "Installing $FILE" >> $errfile
+	    PKG_FILE=`find . -name "$FILE.pkg.tar.gz"`
+	    pkgadd -r $ROOT $PKGARGS $PKG_FILE >> $errfile 2>&1
+	    if [ $? != 0 ]; then
+		let $((ERRORS+=1))
+		echo "***** ERROR *****" >> $errfile
+	    fi
+	    echo "" >> $errfile
+	done
+
+	# Install kernel
+	if [ ! -d $ROOT/usr/src/linux-$KERNEL_VERSION ]; then
+	    progressbar "Installing `basename $KERNEL .tar.bz2`..."
+	    echo "Installing `basename $KERNEL .tar.bz2`" >> $errfile
+	    (
+		set -e
+		tar -C $ROOT/usr/src -xjf $KERNEL
+		chown -R root.root $ROOT/usr/src/linux-$KERNEL_VERSION
+		patch -d $ROOT/usr/src/linux-$KERNEL_VERSION -p1 < ./kernel/linux-$KERNEL_VERSION.patch
+		if [ ! -d $ROOT/lib/modules/$KERNEL_VERSION ]; then
+		    mkdir -p $ROOT/lib/modules/$KERNEL_VERSION
+		    depmod -b $ROOT -a $KERNEL_VERSION
+		fi
+	    ) >> $errfile 2>&1
+	    if [ $? != 0 ]; then
+		let $((ERRORS+=1))
+		echo "***** ERROR *****" >> $errfile
+	    fi
+	else
+	    echo "Directory $ROOT/usr/src/linux-$KERNEL_VERSION already exists." >> $errfile
+	    echo "Assuming linux-$KERNEL_VERSION is already installed." >> $errfile
+	fi
+	echo "" >> $errfile
+
+        # Update library links and cache
+	progressbar "Updating library links and cache..."
+	echo "Updating library links and cache..." >> $errfile
+	ldconfig -r $ROOT >> $errfile
+	if [ $? != 0 ]; then
+	    let $((ERRORS+=1))
+	    echo "***** ERROR *****" >> $errfile
+	fi
+	echo "" >> $errfile
+
+        # Log footer
+	echo "----------------------------------------------------------" >> $errfile
+	echo "$ERRORS error(s) found" >> $errfile
+
+	if [ "$ACTION" = "INSTALL" ]; then
+	    if [ "$ERRORS" = "0" ]; then
+		echo "Installation finished successfully!" >> $logfile
+	    else
+		echo "Installation FAILED!" >> $logfile
+		echo "" >> $logfile
+		echo "See log below for details. Installation failure is in most" >> $logfile
+		echo "cases caused by one of the following reasons:" >> $logfile
+		echo " - Swap was not activated." >> $logfile
+		echo " - Swap was too small." >> $logfile
+		echo " - CD/ISO image was corrupt." >> $logfile
+	    fi
+	else
+	    if [ "$ERRORS" = "0" ]; then
+		echo "Upgrade finished successfully!" >> $logfile
+	    else
+		echo "Upgrade FAILED!" >> $logfile
+		echo "" >> $logfile
+		echo "See log below for details and try to correct the problem(s)" >> $logfile
+		echo "by hand." >> $logfile
+	    fi
+	fi
+	echo "" >> $logfile
+	echo "" >> $logfile
+	cat $errfile >> $logfile
+
+    ) | do_dialog --title " Please wait " --gauge "" 8 60 0
+
+    # Show log
+    do_dialog --exit-label "OK" --textbox $logfile 19 68
+}
+
+main() {
+    welcome
+    select_action
+    select_root
+    select_packages
+    confirm
+    install_packages
+}
+
+tmpfile=/tmp/tmp.$$
+pkgfile=/tmp/packages.$$
+errfile=/tmp/error.$$
+logfile=/tmp/log.$$
+
+trap "rm -f $tmpfile $pkgfile $errfile" 0 1 2 5 15
+
+main
+
+# End of file

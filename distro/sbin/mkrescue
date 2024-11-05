@@ -1,0 +1,315 @@
+#!/bin/bash
+#
+# mkrescue
+#
+#	30-Oct-2001	original version 1.0
+#
+# Revision history:
+#	09-Apr-2002	John Coffman	modify for lilo 22.3   1.1
+#	09-Jun-2002	John Coffman	get keyboard translation table 1.2
+#					(suggested by Qing Liu)
+#
+
+debug=false
+version=1.2
+
+usage () {
+    cat <<EOF
+
+usage:	`basename $0` [--help]
+	`basename $0` [--version]
+	`basename $0` [--device <device>] [--fast] [--fs ext2|msdos|minix]
+		[--initrd <file> --kernel <file>] [--keymap <keymap.ktl>] 
+		[--nocompact] [--noformat] [--root <device>]
+
+  --device  is the floppy drive; e.g.,  /dev/fd0
+  --fast  specifies creation using a loopback device, which may be faster
+  --fs  is the filesystem to make on the device; e.g.,  ext2
+  --help  prints this helpfile
+  --initrd and --kernel  are the initial ramdisk & kernel files
+  --keymap  is the keyboard translation table; default to same as lilo.conf
+  --noformat  bypasses creation of a new filesystem on device
+  --nocompact  omits lilo map file compaction
+  --root  is the root filesystem for the boot floppy; e.g., current
+  --version  prints the version number of `basename $0`
+
+Used without any arguments, `basename $0` will use the running kernel booted
+by lilo, the companion initrd (if any), and the current root filesystem to
+make a bootable 1.44M rescue floppy.
+
+EOF
+    exit $1
+}
+
+
+
+lilo=/sbin/lilo
+## lilo=$(pwd)/lilo
+compact=-c
+config=/etc/lilo.conf
+device=/dev/fd0
+fs=ext2
+mount=/tmp/mkrescue-flp
+mfile=/tmp/mkrescue-emu
+loopback=loop4
+install=text
+format=yes
+root=current
+fast=
+size=1440
+bootcmd=
+
+
+image=`cat /proc/cmdline | sed "s/.*BOOT_IMAGE=//" | sed "s/ .*//"`
+
+kernel=`$lilo -C $config -I $image i`
+if [ "$kernel" = "" ]; then exit 1;
+elif [ $debug = "true" ]; then echo kernel = "$kernel";
+fi
+
+initrd=`$lilo -C $config -I $image r`
+if [ "$initrd" = "" ]; then exit 1;
+elif [ $debug = "true" ]; then echo initrd = "$initrd";
+fi
+if [ "$initrd" = "No initial ramdisk specified" ]; then initrd= ; fi
+
+keymap=`$lilo -C $config -I $image k`
+if [ "$keymap" = "" ]; then exit 1;
+elif [ $debug = "true" ]; then echo keymap = "$keymap";
+fi
+
+root=`mount | grep " on / type" | sed "s/ .*//"`
+if [ -z $root ]; then
+	echo "Cannot find mounted root partition"
+	echo "Using current root"
+	root=current
+fi
+
+
+while [ $# -gt 0 ]; do
+    case $1 in
+	--debug)
+	    debug=true
+	    ;;
+	--device)
+	    shift
+	    device=$1
+	    ;;
+	--fast)
+	    fast=fast
+	    ;;
+	--fs)
+	    shift
+	    fs=$1
+	    ;;
+	-h)
+	    usage 0
+	    ;;
+	--help)
+	    usage 0
+	    ;;
+	--initrd)
+	    shift
+	    initrd=$1
+	    ;;
+	--kernel)
+	    shift
+	    kernel=$1
+	    ;;
+	--keymap)
+	    shift
+	    keymap=$1
+	    ;;
+	--nocompact)
+	    compact=
+	    ;;
+	--noformat)
+	    format=no
+	    ;;
+	--root)
+	    shift
+	    root=$1
+	    ;;
+	--version)
+	    echo `basename $0` version $version
+	    exit 0
+	    ;;
+	*)
+	    echo "unrecognized argument: " $1
+	    usage 1
+	    ;;
+    esac
+
+    shift
+done
+
+if [ $fs != msdos -a $fs != ext2 -a $fs != minix ]; then
+    echo "illegal option:  --fs" $fs
+    echo "   must be either  msdos  or  ext2  or  minix"
+    exit 1
+fi
+
+if [ $fs = msdos ]; then
+	mountconfig=$mount/lilo.cnf
+else
+	mountconfig=$mount/lilo.conf
+fi
+
+if [ $debug = "true" ]; then
+	umount $mfile
+	echo lilo = $lilo
+	echo device = $device
+	echo image = $image
+	echo kernel = $kernel
+	echo initrd = $initrd
+	echo install = $install
+	echo format = $format
+	echo fs = $fs
+	echo root = $root
+	echo compact = $compact
+	echo keymap = $keymap 
+fi
+
+if [ ! -f $kernel ]; then
+	echo "Kernel file " $kernel " does not exist"
+	exit 1
+fi
+
+if [ ! -z $initrd ]; then
+	if [ ! -f $initrd ]; then
+		echo "Initial ramdisk file " $initrd " does not exist"
+		exit 1
+	fi
+fi
+
+echo ""
+echo "Insert a blank floppy into $device"
+echo "All information on this floppy will be destroyed"
+echo "Press [Enter] to proceed, ^C to abort"
+read aline
+
+if [ "$fast" = fast ]; then
+
+	rm -rf $mount $mfile
+	mkdir $mount
+	dd bs=1024 count=$size of=$mfile if=/dev/zero
+	echo Making filesystem
+	echo y | mkfs -t $fs $mfile
+	echo Mounting filesystem
+	mount -t $fs -o loop=/dev/$loopback $mfile $mount
+	if [ $debug = true ]; then
+		mount
+	fi
+	disk="/dev/$loopback sectors=18 heads=2 cylinders=80"
+
+else
+
+	if [ "$format" = "yes" ]; then
+		echo Formatting $device with $fs filesystem...
+		mkfs.$fs $device 1>/dev/null 2>/dev/null
+		echo done.
+		echo ""
+	fi
+
+	rm -rf $mount
+	mkdir $mount
+	mount -t $fs -o rw $device $mount
+
+	rm -rf $mount/*
+	disk=$device
+
+fi
+
+cat > $mountconfig <<EOF
+install=$install
+boot=$device
+map=map
+backup=/dev/null
+message=message
+prompt
+timeout=150
+geometric
+default=linux
+disk=$disk bios=0x00
+root=$root
+read-only
+EOF
+
+if [ $keymap != us.ktl ]; then 
+	echo "keytable=lang.ktl" >>$mountconfig
+fi
+
+echo " " >>$mountconfig
+echo "image=linux" >>$mountconfig
+
+if [ ! -z $initrd ]; then
+	echo "    initrd=initrd" >>$mountconfig
+fi
+
+cat > $mount/message <<EOF
+
+mkrescue version $version floppy will boot in 15 seconds
+Use  "boot: linux <options>"  to enter kernel options
+The root device is currently configured as  root=$root
+
+EOF
+echo `uname --sysname` `uname --release` > $mount/$(uname --release)
+
+sync
+
+if [ $debug = true ]; then
+	echo ""
+	echo "pause after writing lilo.conf & message ..."
+	read aline
+fi
+
+echo "Copying files..."
+if [ $keymap != us.ktl ]; then 
+	cp -pv $keymap $mount/lang.ktl
+fi
+
+if [ ! -z $initrd ]; then
+	cp -pv $initrd $mount/initrd
+fi
+
+cp -pv $kernel $mount/linux
+sync
+
+echo "done."
+echo ""
+
+
+
+log=$(pwd)/mkrescue.log
+pushd $mount >/dev/null 2>/dev/null
+if [ "$fast" = fast ]; then
+	bootcmd="-b /dev/$loopback"
+fi
+
+echo Running $lilo ...
+if [ $debug = true ]; then
+ echo	$lilo -C $mountconfig $compact $bootcmd -v5 ">$log"
+	$lilo -C $mountconfig $compact $bootcmd -v5 >$log || fast=error
+else
+	$lilo -C $mountconfig $compact $bootcmd || fast=error
+fi
+popd >/dev/null 2>/dev/null
+if [ "$fast" = error ]; then
+	echo lilo failure.
+else
+	echo done.
+fi
+echo ""
+
+umount $mount
+rmdir $mount
+
+if [ "$fast" = fast ]; then
+	dd if=$mfile of=$device bs=1024
+fi
+
+rm -f $mfile
+
+echo "All done."
+echo ""
+exit 0

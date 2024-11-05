@@ -1,0 +1,3 @@
+gcc -lssl -lcrypt Janix.c  -o Janix
+gcc -lssl -lcrypt client.c -o send
+

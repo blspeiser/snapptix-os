@@ -1,0 +1,11 @@
+drwxr-xr-x	root/root	etc/
+-rw-r--r--	root/root	etc/inittab
+-rwxr-xr-x	root/root	etc/rc
+drwxr-xr-x	root/root	etc/rc.d/
+-rwxr-xr-x	root/root	etc/rc.local
+-rwxr-xr-x	root/root	etc/rc.modules
+-rwxr-xr-x	root/root	etc/rc.multi
+-rwxr-xr-x	root/root	etc/rc.shutdown
+-rwxr-xr-x	root/root	etc/rc.single
+drwxr-xr-x	root/root	sbin/
+-rwxr-xr-x	root/root	sbin/snapptix_start.sh

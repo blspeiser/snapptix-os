@@ -1,0 +1,46 @@
+VERSION = 1.0
+
+all : gtk_install pngtofb mdetect
+gtk_install : gtk_install-1.0 
+	$(MAKE) -C gtk_install-1.0
+mdetect : mdetect-0.5.2
+	$(MAKE) -C mdetect-0.5.2
+pngtofb : pngtofb.c
+	gcc -Wall -lm -lpng pngtofb.c -o pngtofb
+clean :
+	rm pngtofb
+	$(MAKE) -C gtk_install-1.0 clean
+	$(MAKE) -C mdetect-0.5.2 clean
+	rm snapptix-1.0.iso
+	rm -rf snapptix-boot/snapptix/*
+install : pngtofb mdetect gtk_install
+	mkdir -p snapptix-boot/snapptix/images
+	strip pngtofb
+	strip gtk_install-1.0/gtk_install
+	strip mdetect-0.5.2/mdetect
+	strip util-linux-2.11z/fdisk/sfdisk
+	cp pngtofb snapptix-boot/snapptix
+	cp snapptix_functions.sh snapptix-boot/snapptix
+	cp start_install.sh snapptix-boot/snapptix
+	cp test_net_params.sh snapptix-boot/snapptix
+	cp sync_node.sh snapptix-boot/snapptix
+	cp sync_other_node.sh snapptix-boot/snapptix
+	cp gtk_install-1.0/gtk_install snapptix-boot/snapptix
+	cp mdetect-0.5.2/mdetect snapptix-boot/snapptix
+	cp images/x_config_splash.png snapptix-boot/snapptix/images
+	cp images/mouse_detect_splash.png snapptix-boot/snapptix/images
+	cp images/x_config_failed_splash.png snapptix-boot/snapptix/images
+	cp images/mouse_detect_failed_splash.png snapptix-boot/snapptix/images
+	cp images/x_init_failed_splash.png snapptix-boot/snapptix/images
+	cp images/background.xpm snapptix-boot/snapptix/images
+	cp images/header.xpm snapptix-boot/snapptix/images
+	cp util-linux-2.11z/fdisk/sfdisk snapptix-boot/snapptix
+snapptix-${VERSION}.iso : install
+	mkisofs -r -l -o snapptix-${VERSION}.iso -b boot/isolinux/isolinux.bin \
+		-c boot/isolinux/boot.cat -no-emul-boot -boot-load-size 4 \
+		-boot-info-table snapptix-boot/
+cdrw : snapptix-${VERSION}.iso 
+	cdrecord dev=1,0,0 -v gracetime=2 blank=minimal
+	cdrecord dev=1,0,0 -eject -v gracetime=2 -raw snapptix-${VERSION}.iso
+cd : snapptix-${VERSION}.iso
+	cdrecord dev=1,0,0 -v gracetime=2 -eject speed=4 snapptix-${VERSION}.iso

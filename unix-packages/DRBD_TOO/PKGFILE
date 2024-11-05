@@ -1,0 +1,27 @@
+# $Id:
+# Maintainer: Ryan Tolboom <rxt1077@njit.edu>
+
+# Makes pacakge for drbd
+name=drbd-tools
+version=3-25-03
+release=1
+source=(drbd-${version}.tar.bz2
+	drbd.patch)
+
+build() {
+	# Make utiltities
+	cd drbd
+	cd scripts
+	patch -p0 < $SRC/drbd.patch
+	cd ..
+	make
+
+	# Put them in the package
+	mkdir -p $PKG/usr/bin
+	cp user/drbdsetup $PKG/usr/bin/
+	mkdir -p $PKG/etc/rc.d
+	cp scripts/drbd $PKG/etc/rc.d
+	mkdir -p $PKG/etc/ha.d/resource.d
+	ln -sf /etc/rc.d/drbd $PKG/etc/ha.d/resource.d/datadisk
+	mkdir -p $PKG/var/lib/drbd
+}

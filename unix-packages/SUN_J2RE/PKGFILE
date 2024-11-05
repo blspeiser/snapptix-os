@@ -1,0 +1,21 @@
+# $Id:
+# Maintainer: Ryan Tolboom <rxt1077@njit.edu>
+
+# Installs the Sun Java 2 Runtime Environment from binaries provided
+# by Sun
+# NOTICE: Due to legal restrictions you can't automate the download
+# hence you have to have the j2re binary in the package directory.
+# you can get it from java.sun.com
+name=sun-j2re
+version=1_4_1_02
+release=1
+source=(j2re-${version}-linux-i586.bin)
+
+build() {
+	tail +371 j2re-${version}-linux-i586.bin > self-extractor.bin
+	chmod +x self-extractor.bin
+	cd $PKG
+	mkdir usr
+	cd usr
+	$SRC/self-extractor.bin
+}

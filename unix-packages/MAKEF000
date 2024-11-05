@@ -1,0 +1,21 @@
+FLAGS=-DDEBUG -DDESTRUCTIVE -g
+#FLAGS=-DDEBUG -g
+
+gtk_install : gtk_install.c gtk_install.h hdutils.o pkgutils.o threads.o configs.o\
+	      read_utils.o network.o
+	gcc $(FLAGS) -lpthread -lcrypt -Wall hdutils.o pkgutils.o threads.o configs.o\
+	    read_utils.o network.o gtk_install.c -o gtk_install `gtk-config --cflags` `gtk-config --libs`
+hdutils.o : hdutils.c gtk_install.h
+	gcc $(FLAGS) -Wall -c hdutils.c -o hdutils.o `gtk-config --cflags`
+pkgutils.o : pkgutils.c gtk_install.h packages.h
+	gcc $(FLAGS) -Wall -c pkgutils.c -o pkgutils.o `gtk-config --cflags`
+threads.o : threads.c
+	gcc $(FLAGS) -Wall -c threads.c -o threads.o `gtk-config --cflags`
+configs.o : configs.c configs.h
+	gcc $(FLAGS) -Wall -c configs.c -o configs.o `gtk-config --cflags`
+read_utils.o : read_utils.c
+	gcc $(FLAGS) -Wall -c read_utils.c -o read_utils.o `gtk-config --cflags`
+network.o : network.c
+	gcc $(FLAGS) -Wall -c network.c -o network.o `gtk-config --cflags`
+clean :
+	rm gtk_install hdutils.o pkgutils.o threads.o configs.o read_utils.o network.o

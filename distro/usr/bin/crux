@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "CRUX version 1.0"
+
+# End of file

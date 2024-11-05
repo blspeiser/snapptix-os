@@ -1,0 +1,409 @@
+    * Added support for FSAA with UBB.
+
+    * Support for OpenGL 1.4
+
+    * Finished GLX 1.3 support
+
+    * Support for AGP 3.0
+
+    * Improved support for NForce2
+
+    * Added support for NV30 and NV30 extensions.
+
+    * Fixed bug where there was corruption at the borders of a pbuffer
+
+    * More complete acceleration for the XRENDER extension.  Due to the
+      experimental nature, RENDER acceleration is now disabled by default
+      (Option "RenderAccel" enables it).
+
+    * The driver no longer uses the XFree86 Acceleration Architecture (XAA),
+      but provides its own 2D acceleration architecture to better accomodate
+      the needs of simultaneous 3D and 2D rendering.
+
+    * Added color index overlay emulation on Quadro4.
+
+    * Added support for separate X screens on a single GPU (supported
+      by all GPUs that support TwinView).
+
+2002-9-10 version 1.0-3123
+
+    * Added support for NV18, NV28 and nForce 2.
+
+    * Added Quadbuffered workstation stereo visuals for Quadro2, 4 and
+      Quadro DCC.
+
+    * Improved Viewperf numbers.
+
+    * Added support for up to 16 monitors.
+
+    * Added support for T221 panel.
+
+    * Added support for RGB OpenGL overlays in TwinView on NV25/28.
+
+    * Added support for hardware clip ids on Quadro4 parts.  Option "UseClipIDs"
+      enables them.
+
+2002-5-23 version 1.0-2960
+
+    * Fixed problem with loading the GLX extension in multi-head
+      environments with non-NVIDIA video cards.
+
+    * Significant performance improvements in Viewperf on Quadro parts.
+
+    * Added option "NoRenderExtension" to disable the RENDER extension.
+      This is useful in 8bpp where the RENDER extension will preallocate
+      a large portion of the default colormap and break many legacy 
+      applications.
+
+    * Fixed a regression where I420 XvImages had the chroma planes swapped.
+
+    * Fixed some problems with moving overlay windows.
+
+    * Added a dynamic XvMC library "libXvMCNVIDIA_dynamic.so" so that 
+      applications can dynamically load the vendor-specific core XvMC
+      support.
+
+    * Added XvMC motion-compensation acceleration for NV25 and fixed
+      some bugs in the NV17 XvMC support.
+
+    * Fixed some problems with FSAA modes failing.
+
+2002-4-3 version 1.0-2880
+
+    * Fixed rendering problems which occurred in some cases when 
+      GL_SYNC_TO_VBLANK was enabled.
+
+    * Fixed problem where the maximum pixel clock was set too low.
+      
+    * Fixed a problem with image flicker when running full-screen apps
+      on GeForce4.
+  
+    * Fixed a pixmap cache corruption problem on GeForce3.
+
+    * Fixed some issues running multiple NVIDIA graphics cards simultaneously.
+
+2002-3-7 version 1.0-2802
+
+    * Support for anisotropic filtering.
+
+    * Provide libXvMCNVIDIA.a which is an implementation of XvMC 1.0.
+      This allows mpeg acceleration on NV17 chips and NV17 chips only.
+
+    * RGB Workstation overlays for Quadro4.  These are double buffered,
+      Z-buffered 16 bit visuals.  The transparency key is 0x0000 hex.
+
+    * NV17 and NV25 support.
+
+    * Added an 8:8:8:8 XRGB XvImage format to the video blitter.
+
+    * Config file option for Digital Vibrance Control.
+     
+    * Added new XF86Config option "FlatPanelProperties" to control dithering 
+      and scaling when X is started.
+
+    * Added support for SoftEDID's. When enabled the driver will generate 
+      an EDID based on the video bios isntead of doing a table lookup.
+
+    * Improved Crush support
+
+    * Fixed problem with using SGIX_fbconfig and SGIX_pbuffer with 
+      indirect rendering (protocol was incorrect)
+
+    * Fixed problem where the driver would fail on systems with >= 1GB 
+      of memory and a kernel configured to use all the memory.
+
+2001-11-26 version 1.0-2313
+
+    * Got Crush working.
+
+    * OpenGL 1.3 support.
+
+    * Added SGIX_pbuffer and SGIX_fbconfig extensions.
+
+    * Added UBB support, pageflipping and window flipping (described in
+      README).
+
+    * Improved Viewperf performance, Quake performance and performance
+      of immediate mode applications.
+
+    * Improved stability on AMD platforms.
+
+    * Fixed TwinView problem that caused garbage to appear on the screen
+      when starting X with a null option on head 0.
+
+    * Added workaround for XAA bug that causes system to hang when Lisa
+      Screensaver is run.  The problem is worked around by adding the
+      following line in the "Device" section of the XF86Config file:
+      'Option "XaaNoSolidFillTrap"'.  This option prevents XAA from
+      breaking wide lines (and polyggons) into trapezoids and avoids an
+      XAA clipping bug.
+      
+    * Fixed a system hang that occured on some chipsets when taking the
+      X server down (after having run once successfully) and restarting
+      it while using the DVI-I connected toa flat panel.
+
+    * Fixed problem where the performer application Perfly would hang
+      when run in forked-draw mode.
+
+    * Fixed problem where the X driver would segfault when given an
+      invalid MetaMode.
+
+    * Fixed problem where the console was not restored properly after
+      entering X and returning to the console.
+
+    * Fixed problem where X did not redraw completely after a screen
+      blank on GForce 2 Go and Quadro 2 Go.
+
+    * Fixed problem with initializing secondary card. In most cases, the
+      secondary card is posted correctly.  In the cases where it isn't,
+      there is now a workaround to initialize the card via X.
+
+    * Added workarounds to enable AGP on ALI chipsets and enable 4X AGP
+      on VIA chipsets (See README and use with caution!).
+
+2001-08-20 version 1.0-1541
+
+    * Changed behaviour of the X server so the NVIDIA splash screen will
+      only show up on the first run of X.  This can also be disabled by
+      setting an option in XF86Config (see README).
+
+    * Fixed problem where OpenGL applications would sometimes leave
+      portions of their rendering behind when the window was closed
+      using the kill button on the window banner.
+
+    * Fixed problem on mobile where X would respond to the wrong hotkey
+      event under some conditions.
+
+    * Fixed several more problems with indirect rendering.
+
+    * Fixed problem on SMP machines which occured when VT switching
+      while running gloss and gears indirect.
+
+    * Fixed problem where /proc/nv/card0 did not report nv20 correctly.
+
+    * Fixed problem on TNT2, where the driver would only support up to 4
+      threads per process.
+
+    * Fixed Xserver crash that occured when running two Xservers with
+      AGPgart.
+
+    * Fixed some problems in GLX that occured when running
+      multi-threaded  applications.
+
+2001-07-05 version 1.0-1420
+
+    * Added support for hotkey switching on mobile platforms.
+
+    * Fixed a hang on mobile that occurred after starting X, killing it
+      and restarting.
+
+    * Fixed a problem on mobile platforms that prevented DVD's from
+      displaying.
+
+    * Fixed a problem that caused OpenGL programs to segfault when using
+      a graphical login with xdm/kdm, and doing the following sequence:
+      login, mode switch, logout, log in and run a GL app.
+
+    * Fixed some indirect rendering problems.
+
+    * Fixed a problem that caused Xconfigure to fail on NVIDIA drivers.
+
+    * Fixed a crash that occured when X forwarding over SSH.
+
+    * Fixed OpenGL front buffer clipping bug.
+
+    * Added xf86XVOffscreenImage support so the V4L module can use the
+      hardware scaler on YUV surfaces.
+
+    * Improved X-Render acceleration.
+
+    * Fixed a bug that prevented X-Render acceleration on GeForce3.
+
+2001-05-14 version 1.0-1251
+
+    * Preliminary GeForce2 Go support.
+
+    * Added support for GeForce3 OpenGL and GLX extensions.
+
+    * Fixed many SMP bugs.
+
+    * Added TV-Out support.
+     
+    * Fixed DGA depth change bug.
+
+    * Rewrote 2D offscreen memory allocation.
+
+    * Fixed X-Video in TwinView.
+
+    * Acceleration for X-Render extension.
+
+    * Fixed up GLXPixmap rendering.
+
+    * Fixed problem with make current to same drawable but different
+      dpy.
+
+    * Fixed problem in which OpenGL would segfault when reading X
+      atoms.
+
+    * X now gets the DPI (dots per inch) from the monitor's EDID (rather
+      than just defaulting to 75 dpi).
+
+    * All DPMS modes are now supported.  There are still issues on flat
+      panels and on the second head of a TwinView system (please see the
+      README).
+
+    * Fixed support for AGP on systems with 1 GB or more of memory.
+
+2001-02-16 version 0.9-769
+
+    * Fixed problem where direct rendering applications were allowed to
+      continue rendering after xkill was called.
+
+    * Fixed problem where Tribes 2 crashed when compressed textures
+      (s3tc textures) were used.
+
+    * Some drawable leaks were fixed in X and GLX.
+
+    * Fixed problem where the application would hang when calling
+      glXMakeCurrent while holding the X server grab.
+
+    * Bios-posting problems on GeForce2 GTS and GeForce Ultra cards were
+      fixed.  This bug resulted in a significant performance loss.
+
+    * Added support for the X Render extension.
+
+    * TwinView functionality was enhanced so that each head can pan 
+      independently.
+
+    * Fixed problem on TNT and TNT2 where Xv(Shm)PutImage returned
+      BadAlloc in high resolutions when there was not enough video
+      bandwidth to display the YUV video overlay correctly. This works
+      now but the resulting display has artifacts.
+
+    * Fixed problem with cursor hanges in X.
+
+    * Fixed problem with X console not restoring on some monitors.
+
+    * Fixed problem with fork() and OpenGL rendering.
+
+    * Fixed problem with X driver module, nvidia_drv.o, being stripped
+      when RPM was rebuilt.
+
+    * Added missing PCI device ids for some TNT2 variants and GeForce3.
+
+    * Fixed problem where the kernel would often hang during X and/or
+      OpenGL operation when on an SMP machine and using the 2.4 kernel.
+
+    * Fixed SYNC_TO_VBLANK hang with 2.4 kernels.
+
+    * DPMS is partially working again. It is possible to set the "off"
+      option for dpms.  DPMS options "suspend" and "standby" are not
+      fully supported -- they simply blank the screen.  
+
+2000-12-20 version 0.96
+
+    * Fix many SMP problems.
+
+    * Fix memory management problems that arise with large RAM systems
+      (500M+).
+
+    * Add multi-mon OpenGL support.
+
+    * Add TwiNView support.
+
+    * More modeline handling fixes, added double-scan support.
+
+    * Fix bios-posting problems with TNT2 M64s and GeForce2 MXs.
+
+    * Dynamic run-time selection between nvagp and agpgart.
+
+    * Fix TNT2 OpenGL slowdowns (noticeable in UT).
+
+2000-08-30 version 0.95
+
+    * Improve XFree86 4.0.1 support.
+
+    * Re-fixed console switch lockup.
+
+    * Fix some AGP regressions.  Better detection/support for AGPGART.
+
+    * Fix color palette problems (xgamma, direct color visuals).
+
+    * Add bios posting override to help with some card problems (M64).
+
+    * Update included 2.4 support to newest test kernels.
+
+2000-07-07 version 0.94
+
+    * Add support for XFree86 4.0.1
+
+    * Fix modesetting problem.
+
+    * Add AGPGART support (nvagpgart v. 0.5-5).
+
+    * Add GeForce2 MX support.
+
+    * Fixed various hangs.
+
+    * Added FSAA support.
+
+    * Fixed problem where an opengl app dying during a console switch
+      would kill the X Server.
+
+2000-06-08 version 0.9-3
+
+    * Allow Modeline directives in the XF86Config file to override our
+      auto-detection of monitor resolutions and refresh rates.
+
+    * "Correct" fix for TNT memory-type problems.
+
+    * Fix for VT switch lockups.
+
+    * Fix for general ALI chipset lockups.
+
+    * Addition and documentation of some registry keys.  Check
+      os-registry.c in the kernel source directory for more details and
+      options.
+
+    * Work around Quake3 modeswitch crashing bug.  Note: It's really a
+      bug in dlopen().
+
+    * Major improvement in multi-threading behavior.
+
+    * Display list sharing with glXCreateContext works now.
+
+    * Faster implementation of glTexImage/glTexSubImage and
+      glCopyTexImage/glCopytexSubImage calls.
+
+    * Fixed kernel memory leak, relating to threaded OpenGL.  This
+      problem was most noticeable with xmms.
+
+    * Fix build problems with older 2.2.x kernels (RedHat 6.0).
+
+2000-05-02 version 0.9-2
+
+    * Fixed problem initializing TNT w/ SGRAM.
+
+    * Removed all GPL'd code from nv.c.
+
+    * Better logging and messages everywhere for tracking problems.
+
+    * Dynamic allocation of client data in kernel, rather than static.
+
+    * Incorporated *unsupported* 2.3 kernel changes for completeness.
+
+    * Makefile updates - add -D_LOOSE_KERNEL_NAMES, and default to 'make
+      install'.
+
+    * Improved mode switching in quake3 (still see occasional crashes).
+
+    * Changed installation name of libraries.  We now have a .1.0.1
+      revision name in the libraries.
+
+    * Temporarily force disabling of AGP fast writes for all chipsets.
+
+    * Fixed monitor issues, allow overriding of sync polarities.
+
+2000-04-25 version 0.9-1
+
+    * Initial Release.

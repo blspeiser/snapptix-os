@@ -1,0 +1,10 @@
+drwxr-xr-x	root/root	etc/
+drwxr-xr-x	root/root	etc/ssl/
+drwxr-xr-x	root/root	etc/ssl/certs/
+-rw-------	root/root	etc/ssl/certs/SnappCert.pem
+drwxr-xr-x	root/root	usr/
+drwxr-xr-x	root/root	usr/bin/
+-rwxr-xr-x	root/root	usr/bin/Janix
+-rwxr-xr-x	root/root	usr/bin/client
+drwxr-xr-x	root/root	usr/share/
+drwxr-xr-x	root/root	usr/share/Janix/

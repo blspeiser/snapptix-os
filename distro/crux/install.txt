@@ -1,0 +1,235 @@
+
+                          CRUX Installation Guide
+
+                    Copyright (c) 2001-2002 by Per Lidén
+
+                         Last modified: 2002-12-13
+
+  ------------------------------------------------------------------------
+
+Supported hardware
+------------------
+
+   * Packages on the official CRUX ISO image are compiled with optimization
+     for i686 processors (Pentium-Pro/Celeron/Pentium-II or better). Do NOT
+     try to install it on an i586 (Pentium, AMD K6/K6-II/K6-III) or lower,
+     since it simply will not work. To install CRUX on an i586 system you
+     need to download the i586 version of the CRUX ISO image.
+
+   * The kernel used during installation, i.e. when booting from the CRUX
+     ISO image (El Torito) is compiled with the following disk controllers
+     and USB support:
+
+     Disk controllers
+
+        - IDE     (Generic PCI IDE chipset)
+
+        - SCSI    (7000FASST, ACARD, Adaptec AHA152X/2825, Adaptec AHA1542,
+                  Adaptec AHA1740, Adaptec AIC7xxx, AdvanSys, AM53/79C974 PCI,
+                  BusLogic, Generic NCR5380/53c400, Initio 9100U(W),
+                  Initio INI-A100U2W, NCR53c406a, NCR53C8XX, Simple 53c710,
+                  Symbios 53c416, Tekram DC390(T) and Am53/79C974, UltraStor)
+
+     USB support
+
+        - USB device filesystem
+        - UHCI (Intel PIIX4, VIA, ...) support
+        - USB Human Interface Device (full HID) support
+	- HID input layer support
+
+     To be able to install CRUX your disk controller must be present in the
+     list above. If your CD-ROM drive does not support bootable ISO images
+     you can boot using a floppy drive instead. Just put your linux kernel
+     of choice on a floppy disk and make it bootable. Insert both the
+     floppy and the CD when booting.
+
+
+Installation
+------------
+
+  1. Download the CRUX ISO image (crux-X.X.X.iso). To ensure that the
+     download was successful you should examine its checksum using md5sum.
+     Run
+
+             md5sum crux-X.X.X.iso
+
+     and compare the output with the file crux-X.X.X.md5sum, which can be
+     found in the same directory as the ISO image on the ftp-site. If the
+     checksums match the download was successful and you can continue with
+     burning the ISO image on a CD.
+
+  2. The ISO image is bootable, just insert the newly burned CD and reboot
+     your computer. Press enter at the boot prompt.
+
+  3. Login as root (no password required).
+
+  4. Create (if necessary) and format the partition(s) you want CRUX to be
+     installed on, e.g.:
+
+       fdisk /dev/discs/disc?/disc             (to create partitions)
+       mkreiserfs /dev/discs/disc?/part?       (to format a reiserfs partition)
+       mkswap /dev/discs/disc?/part?           (to format a swap partition)
+
+     The amount of disk space you need depends on how many packages you
+     choose to install. I recommend you to at least have a 1G root partition
+     (CRUX will use 200-500M depending on your configuration).
+
+     Using reiserfs is recommended, but there is support for ext2fs/ext3fs
+     and JFS as well. Further, it's highly recommended that you to separate
+     the system from user data, i.e. use a separate partition for /home (and
+     possibly /var) since that will make your life easier the day you want
+     to upgrade/reinstall/remove your system.
+
+  5. Mount the partition you want this distribution to be installed on,
+     e.g.:
+
+             mount /dev/discs/disc?/part? /mnt
+
+     If you want the installation to be put on more than one partition, then
+     mount these partitions as well. E.g. if you want to have a different
+     partition for /var, then do like this:
+
+             mkdir /mnt/var
+             mount /dev/discs/disc?/part? /mnt/var
+
+     NOTE: This installation guide assumes that you use /mnt as the mount
+     point for your new root partition. You can of course use something
+     else, just remember to replace all further references to /mnt with your
+     mount point.
+
+  6. Activate your swap partition(s) using the swapon command, i.e.:
+
+             swapon /dev/discs/disc?/part?
+
+  7. Run the Setup script to start the package installation. The script will
+     ask you where you mounted your new root partition and which packages
+     you want to install. Just select the packages you want and nothing else
+     will be installed. However, I recommend you to at least install all
+     packages marked "base".
+
+     When the Setup script has installed the selected packages an
+     installation log will be displayed. Make sure the last line in the log
+     says "0 error(s)".
+
+     If you at a later stage find that you need some additional packages you
+     can just mount the CRUX CD-ROM and use pkgadd to install them.
+
+     NOTE: There is no package dependency checking.
+
+  8. Edit /mnt/etc/fstab to configure your filesystem(s).
+
+  9. Edit /mnt/etc/rc.conf to configure keyboard, services, and timezone.
+
+ 10. Edit /mnt/etc/rc.d/net, /mnt/etc/hosts and /mnt/etc/resolv.conf to
+     configure your network (ip-address/gateway/hostname/domain/dns).
+
+ 11. Reboot your system (boot from the CRUX CD-ROM again) and type "CRUX
+     root=<device>" at the boot prompt. Replace <device> with the name of
+     your new CRUX root partition. Remeber that CRUX uses devfs, thus the
+     name of your root device should be something like
+     /dev/discs/disc?/part?. When CRUX is booting using your new root for
+     the first time there might be some error messages printed to the
+     console. These errors are most often not vital, but you should keep an
+     eye on them. If you reach the login prompt you are most likely home
+     safe.
+
+ 12. Login as root (no password required).
+
+ 13. Change the root password.
+
+ 14. Go to /usr/src/linux-2.4.XX, configure and compile a new kernel.
+     Remember to at least enable the following kernel options:
+
+           Code maturity level options  --->
+                 [*] Prompt for development and/or incomplete code/drivers
+
+           File systems  --->
+                 [*] /dev file system support
+                 [*]   Automatically mount at boot
+
+ 15. Edit /etc/lilo.conf to boot the kernel you just compiled and run lilo
+     to make the new system bootable.
+
+ 16. Remove the CRUX CD-ROM from your drive and reboot from harddisk.
+
+
+Upgrade your CRUX installation
+------------------------------
+
+  1. Download the CRUX ISO image (crux-X.X.X.iso). To ensure that the
+     download was successful you should examine its checksum using md5sum.
+     Run
+
+             md5sum crux-X.X.X.iso
+
+     and compare the output with the file crux-X.X.X.md5sum, which can be
+     found in the same directory as the ISO image on the ftp-site. If the
+     checksums match the download was successful and you can continue with
+     burning the ISO image on a CD.
+
+  2. The ISO image is bootable, just insert the newly burned CD and reboot
+     your computer. Press enter at the boot prompt.
+
+  3. Login as root (no password required).
+
+  4. Mount your CRUX root partition.
+
+             mount /dev/discs/disc?/part? /mnt
+
+     If your installation spans over more than one partition, then
+     mount these partitions as well. E.g. if you have a different
+     partition for /var, then do like this:
+
+             mount /dev/discs/disc?/part? /mnt/var
+
+     NOTE: This installation guide assumes that you use /mnt as the mount
+     point for your root partition. You can of course use something
+     else, just remember to replace all further references to /mnt with
+     your mount point.
+
+  5. Activate your swap partition(s) using the swapon command, i.e.:
+
+             swapon /dev/discs/disc?/part?
+
+  6. Run the Setup script to start the package upgrade. The script will
+     ask you where you mounted your root partition and which packages
+     you want to upgrade. It is a good idea to upgrade all packages, else
+     you might get into trouble later, e.g. in case some new library isn't
+     100% backwards compatible.
+
+     When the Setup script has upgraded the selected packages a log will
+     will be displayed. Make sure the last line in the log says "0 error(s)".
+
+     If you at a later stage find that you need some additional packages you
+     can just mount the CRUX CD-ROM and use pkgadd to install them.
+
+     NOTE: There is no package dependency checking.
+
+  7. Reboot your system (boot from the CRUX CD-ROM again) and type "CRUX
+     root=<device>" at the boot prompt. Replace <device> with the name of
+     your CRUX root partition. Remeber that CRUX uses devfs, thus the
+     name of your root device should be something like
+     /dev/discs/disc?/part?. When CRUX is booting using your upgraded root
+     for the first time there might be some error messages printed to the
+     console. These errors are most often not vital, but you should keep an
+     eye on them. If you reach the login prompt you are most likely home
+     safe.
+
+  8. Go to /usr/src/linux-2.4.XX, configure and compile a new kernel.
+     Remember to at least enable the following kernel options:
+
+           Code maturity level options  --->
+                 [*] Prompt for development and/or incomplete code/drivers
+
+           File systems  --->
+                 [*] /dev file system support
+                 [*]   Automatically mount at boot
+
+  9. Edit /etc/lilo.conf to boot the kernel you just compiled and run lilo
+     to make the new system bootable.
+
+ 10. Remove the CRUX CD-ROM from your drive and reboot from harddisk.
+
+
+  ------------------------------------------------------------------------
+        CRUX Installation Guide - Copyright © 2001-2002 by Per Lidén

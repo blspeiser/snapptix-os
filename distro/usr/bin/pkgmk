@@ -1,0 +1,506 @@
+#!/bin/bash
+#
+#  pkgutils
+# 
+#  Copyright (c) 2000-2002 Per Liden <per@fukt.bth.se>
+# 
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, 
+#  USA.
+#
+
+info() {
+    echo "=======> $1"
+}
+
+warning() {
+    echo "=======> WARNING: $1"
+}
+
+error() {
+    echo "=======> ERROR: $1"
+}
+
+strip_url() {
+    echo $1 | sed 's|^.*://.*/||g'
+}
+
+check_pkgfile() {
+    if [ ! "$name" ]; then
+	error "Variable 'name' not specified in $PKGFILE."
+	exit 1
+    fi
+
+    if [ ! "$version" ]; then
+	error "Variable 'version' not specified in $PKGFILE."
+	exit 1
+    fi
+
+    if [ ! "$release" ]; then
+	error "Variable 'release' not specified in $PKGFILE."
+	exit 1
+    fi
+
+    if [ ! "$source" ]; then
+	error "Variable 'source' not specified in $PKGFILE."
+	exit 1
+    fi
+
+    if [ "`type -t build`" != "function" ]; then
+	error "Function 'build' not specified in $PKGFILE."
+	exit 1
+    fi
+}
+
+download() {
+    info "Downloading '$1'."
+
+    if [ ! "`type -p wget`" ]; then
+	error "Command 'wget' not found."
+        exit 1
+    fi
+
+    wget --passive-ftp --no-directories --tries=3 --waitretry=3 $1
+
+    if [ $? != 0 ]; then
+	error "Downloading '$1' failed."
+	exit 1
+    fi
+}
+
+check_source() {
+    for FILE in ${source[@]}; do
+	LOCAL_FILENAME=`strip_url $FILE`
+	if [ ! -e $LOCAL_FILENAME ]; then
+	    if [ "$LOCAL_FILENAME" = "$FILE" ]; then
+		error "Source file '$LOCAL_FILENAME' not found (can not be downloaded, URL not specified)."
+		exit 1
+	    else
+		if [ "$OPT_DOWNLOAD" = "yes" ]; then
+		    download $FILE
+		else
+		    error "Source file '$LOCAL_FILENAME' not found (use option -d to download)."
+		    exit 1
+		fi
+	    fi
+	fi
+    done
+}
+
+unpack_source() {
+    for FILE in ${source[@]}; do
+	LOCAL_FILENAME=`strip_url $FILE`
+	case $LOCAL_FILENAME in
+	    *.tar.gz|*.tar.Z|*.tgz)
+		CMD="tar -C $SRC --use-compress-program=gzip -xf $LOCAL_FILENAME" ;;
+	    *.tar.bz2)
+		CMD="tar -C $SRC --use-compress-program=bzip2 -xf $LOCAL_FILENAME" ;;
+	    *.zip)
+		CMD="unzip -qq -d $SRC $LOCAL_FILENAME" ;;
+	    *)
+		CMD="cp $LOCAL_FILENAME $SRC" ;;
+	esac
+	echo "$CMD"
+	$CMD
+    done
+}
+
+make_md5sum() {
+    LOCAL_FILENAMES=""
+    for FILE in ${source[@]}; do
+        LOCAL_FILENAMES="$LOCAL_FILENAMES `strip_url $FILE`"
+    done
+    md5sum $LOCAL_FILENAMES | sort -k 2
+}
+
+make_footprint() {
+    gzip -dc $TARGET_FULL | tar -tv | \
+    gawk '{ if ($7 == "->") \
+		line="lrwxrwxrwx\t"$2"\t"$6" "$7" "$8; \
+	    else \
+		line=$1"\t"$2"\t"$6; \
+	    if ($3 == "0" && $7 != "->" && $7 != "link" && $6 !~ /\/$/) \
+		line=line" (EMPTY)"; \
+	    print(line); }' | sort -k 3
+}
+
+check_md5sum() {
+    TMPFILE="$WORKDIR/tmp"
+
+    cd $ROOT
+    make_md5sum > $TMPFILE.md5sum
+    if [ -f $MD5SUM ]; then
+	sort -k 2 $MD5SUM > $TMPFILE.md5sum.orig
+	diff -w -t -U 0 $TMPFILE.md5sum.orig $TMPFILE.md5sum | \
+	   sed '/^@@/d' | \
+	   sed '/^+++/d' | \
+	   sed '/^---/d' | \
+	   sed 's/^+/NEW       /g' | \
+	   sed 's/^-/MISSING   /g' > $TMPFILE.md5sum.diff
+	if [ -s $TMPFILE.md5sum.diff ]; then
+	    error "Md5sum mismatch found:"
+	    cat $TMPFILE.md5sum.diff
+	    if [ "$OPT_KEEP_WORK" = "no" ]; then
+		rm -rf $WORKDIR &> /dev/null
+	    fi
+	    error "Building '$TARGET' failed."
+	    exit 1
+	fi
+    else
+	warning "Md5sum not found, creating new."
+	mv $TMPFILE.md5sum $MD5SUM
+    fi
+}
+
+strip_binaries() {
+    cd $PKG
+    info "Stripping binaries."
+    for file in `find . -type f`; do
+	if [ "`file -b $file | grep '^.*ELF 32-bit LSB executable.*not stripped$'`" ]; then
+	    strip $file
+	fi
+    done
+}
+
+compress_manpages() {
+    cd $PKG
+    info "Compressing man-pages."
+    for file in `find . -type f -path "*/man?/*"`; do
+	if [ ! "`echo $file | grep '\.gz$'`" ]; then
+	    gzip -9 $file
+	fi
+    done
+    for file in `find . -type l -path "*/man?/*"`; do
+	target=`ls -l $file | gawk '{ print $11 }'`
+	rm -f $file
+	if [ ! "`echo $file | grep '\.gz$'`" ]; then
+	    file=$file.gz
+	fi
+	if [ ! "`echo $target | grep '\.gz$'`" ]; then
+	    target=`basename $target`.gz
+	fi
+	if [ -e "`dirname $file`/$target" ]; then
+	    ln -sf $target $file
+	fi
+    done
+}
+
+check_footprint() {
+    BUILD_SUCCESSFUL="yes"
+    TMPFILE="$WORKDIR/tmp"
+
+    cd $ROOT
+    if [ -f $TARGET_FULL ]; then
+	make_footprint > $TMPFILE.footprint
+	if [ -f $FOOTPRINT ]; then
+	    sort -k 3 $FOOTPRINT > $TMPFILE.footprint.orig
+	    diff -w -t -U 0 $TMPFILE.footprint.orig $TMPFILE.footprint | \
+		sed '/^@@/d' | \
+		sed '/^+++/d' | \
+		sed '/^---/d' | \
+		sed 's/^+/NEW       /g' | \
+		sed 's/^-/MISSING   /g' > $TMPFILE.footprint.diff
+	    if [ -s $TMPFILE.footprint.diff ]; then
+		error "Footprint mismatch found:"
+		cat $TMPFILE.footprint.diff
+		BUILD_SUCCESSFUL="no"
+	    fi
+	else
+	    warning "Footprint not found, creating new."
+	    mv $TMPFILE.footprint $FOOTPRINT
+	fi
+    else
+	error "Package '$TARGET' was not found."
+	BUILD_SUCCESSFUL="no"
+    fi
+}
+
+build_package() {
+    info "Building '$TARGET'."
+
+    export PKG="$WORKDIR/pkg"
+    export SRC="$WORKDIR/src"
+    umask 022
+
+    cd $ROOT
+    rm -rf $WORKDIR &> /dev/null
+    mkdir -p $SRC $PKG
+
+    if [ "$OPT_IGNORE_MD5SUM" = "no" ]; then
+	check_md5sum
+    fi
+
+    unpack_source
+
+    cd $SRC
+    (set -e -x ; build)
+
+    if [ $? = 0 ]; then
+	if [ "$OPT_NO_STRIP" = "no" ]; then
+	    strip_binaries
+	fi
+	compress_manpages
+
+	cd $PKG
+	info "Build result:"
+	tar czvvf $TARGET_FULL *
+
+	check_footprint
+    fi
+
+    if [ "$OPT_KEEP_WORK" = "no" ]; then
+	rm -rf $WORKDIR &> /dev/null
+    fi
+
+    if [ "$BUILD_SUCCESSFUL" = "yes" ]; then
+	info "Building '$TARGET' succeeded."
+    else
+	if [ -f $TARGET_FULL ]; then
+	    touch -r $ROOT/$PKGFILE $TARGET_FULL &> /dev/null
+	fi
+	error "Building '$TARGET' failed."
+	exit 1
+    fi
+}
+
+install_package() {
+    info "Installing '$TARGET'."
+
+    cd $ROOT
+    if [ "$OPT_INSTALL" = "install" ]; then
+	CMD="pkgadd $TARGET"
+    else
+	CMD="pkgadd -u $TARGET"
+    fi
+    
+    echo "$CMD"
+    $CMD
+
+    if [ $? = 0 ]; then
+	info "Installing '$TARGET' succeeded."
+    else
+	error "Installing '$TARGET' failed."
+	exit 1
+    fi
+}
+
+recursive() {
+    ARGS=`echo "$@" | sed -e "s/--recursive//g" -e "s/-r//g"`
+    for FILE in `find $ROOT -name $PKGFILE | sort`; do
+        DIR="`dirname $FILE`/"
+	if [ -d $DIR ]; then
+	    info "Entering directory '$DIR'."
+	    (cd $DIR && $COMMAND $ARGS)
+	    info "Leaving directory '$DIR'."
+        fi
+    done
+}
+
+interrupted() {
+    echo ""
+    error "Interrupted."
+    rm -rf $WORKDIR &> /dev/null
+    exit 1
+}
+
+print_try_help() {
+    echo "Try '`basename $COMMAND` --help' for more information."
+}
+
+print_help() {
+    echo "usage: `basename $COMMAND` [options]"
+    echo "options:"
+    echo "  -i,   --install             build and install package"
+    echo "  -u,   --upgrade             build and install package (as upgrade)"
+    echo "  -r,   --recursive           search for and build packages recursively"
+    echo "  -d,   --download            download missing source file(s)"
+    echo "  -do,  --download-only       do not build, only download missing source file(s)"
+    echo "  -utd, --up-to-date          do not build, only check if package is up to date"
+    echo "  -uf,  --update-footprint    update footprint using result from last build"
+    echo "  -um,  --update-md5sum       update md5sum"
+    echo "  -im,  --ignore-md5sum       build package without checking md5sum"
+    echo "  -ns,  --no-strip            do not strip executable binaries"
+    echo "  -f,   --force               build package even if it appears to be up to date"
+    echo "  -kw,  --keep-work           keep temporary working directory '`basename $WORKDIR`'"
+    echo "  -cf,  --config-file <file>  use alternative configuration file"
+    echo "  -v,   --version             print version and exit "
+    echo "  -h,   --help                print help and exit"
+}
+
+parse_options() {
+    OPT_INSTALL="no"
+    OPT_RECURSIVE="no"
+    OPT_DOWNLOAD="no"
+    OPT_DOWNLOAD_ONLY="no"
+    OPT_UP_TO_DATE="no"
+    OPT_UPDATE_FOOTPRINT="no"
+    OPT_FORCE="no"
+    OPT_KEEP_WORK="no"
+    OPT_UPDATE_MD5SUM="no"
+    OPT_IGNORE_MD5SUM="no"
+    OPT_NO_STRIP="no"
+
+    while [ "$1" ]; do
+        case $1 in
+	    -i|--install)
+		OPT_INSTALL="install" ;;
+	    -u|--upgrade)
+		OPT_INSTALL="upgrade" ;;
+	    -r|--recursive)
+		OPT_RECURSIVE="yes" ;;
+	    -d|--download)
+		OPT_DOWNLOAD="yes" ;;
+	    -do|--download-only)
+		OPT_DOWNLOAD="yes"
+		OPT_DOWNLOAD_ONLY="yes" ;;
+	    -utd|--up-to-date)
+		OPT_UP_TO_DATE="yes" ;;
+	    -uf|--update-footprint)
+		OPT_UPDATE_FOOTPRINT="yes" ;;
+            -um|--update-md5sum)
+		OPT_UPDATE_MD5SUM="yes" ;;
+            -im|--ignore-md5sum)
+		OPT_IGNORE_MD5SUM="yes" ;;
+	    -ns|--no-strip)
+		OPT_NO_STRIP="yes" ;;
+	    -f|--force)
+		OPT_FORCE="yes" ;;
+	    -kw|--keep-work)
+		OPT_KEEP_WORK="yes" ;;
+	    -cf|--config-file)
+                if [ ! "$2" ]; then
+		    echo "option $1 requires an argument"
+		    print_try_help
+		    exit 1
+		fi
+		CONFFILE="$2"
+		shift ;;
+	    -v|--version)
+		echo "`basename $COMMAND` (pkgutils) $VERSION"
+		exit 0 ;;
+	    -h|--help)
+		print_help
+		exit 0 ;;
+	    *)
+		echo "invalid option $1"
+		print_try_help
+		exit 1 ;;
+	esac
+        shift
+    done
+}
+
+main() {
+    parse_options "$@"
+
+    if [ "$OPT_RECURSIVE" = "yes" ]; then
+        recursive "$@"
+	exit 0
+    fi
+
+    for FILE in $CONFFILE $PKGFILE; do
+	if [ ! -f $FILE ]; then
+	    error "File '$FILE' not found."
+	    exit 1
+	fi
+	. $FILE
+    done
+
+    check_pkgfile
+
+    TARGET_FULL="$ROOT/$name#$version-$release.pkg.tar.gz"
+    TARGET=`basename $TARGET_FULL`
+
+    if [ "$OPT_UPDATE_FOOTPRINT" = "yes" ]; then
+	if [ ! -f $TARGET_FULL ]; then
+	    error "Unable to update footprint. File '$TARGET' not found."
+	    exit 1
+	fi
+	make_footprint > $FOOTPRINT
+	touch $TARGET_FULL
+	info "Footprint updated."
+	exit 0
+    fi
+
+    UP_TO_DATE="no"
+    if [ -f $TARGET_FULL ]; then
+	UP_TO_DATE="yes"
+	for FILE in $PKGFILE ${source[@]}; do
+	    FILE=`strip_url $FILE`
+	    if [ ! -e $FILE ] || [ ! $TARGET_FULL -nt $FILE ]; then
+		UP_TO_DATE="no"
+		break
+	    fi
+	done
+    fi
+
+    if [ "$OPT_UP_TO_DATE" = "yes" ]; then
+	if [ "$UP_TO_DATE" = "yes" ]; then
+	    info "Package '$TARGET' is up to date."
+	else
+	    info "Package '$TARGET' is not up to date."
+	fi
+	exit 0
+    fi
+
+    if [ "$UP_TO_DATE" = "yes" ] && [ "$OPT_FORCE" = "no" ] && [ "$OPT_DOWNLOAD_ONLY" = "no" ] && [ "$OPT_UPDATE_MD5SUM" = "no" ]; then
+	info "Package '$TARGET' is up to date."
+    else
+	if [ ! -w . ]; then
+	    error "Current directory is not writable."
+	    exit 1
+	fi
+	
+	check_source
+	
+	if [ "$OPT_UPDATE_MD5SUM" = "yes" ]; then
+	    make_md5sum > $MD5SUM
+	    info "Md5sum updated."
+	    exit 0
+	fi
+
+	if [ "$OPT_DOWNLOAD_ONLY" = "yes" ]; then
+	    exit 0
+	fi
+	
+	if [ "`id -u`" != "0" ]; then
+	    warning "Packages should be built as root."
+	fi
+    
+	build_package
+    fi
+
+    if [ "$OPT_INSTALL" != "no" ]; then
+	install_package
+    fi
+
+    exit 0
+}
+
+trap "interrupted" SIGHUP SIGINT SIGQUIT SIGTERM
+
+VERSION="5.2"
+COMMAND="$0"
+ROOT=`pwd`
+CONFFILE="/etc/pkgmk.conf"
+PKGFILE="Pkgfile"
+FOOTPRINT=".footprint"
+MD5SUM=".md5sum"
+WORKDIR="$ROOT/work"
+
+export LC_ALL=POSIX
+
+main "$@"
+
+# End of file

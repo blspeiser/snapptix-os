@@ -1,0 +1,11 @@
+prefix=/usr/X11R6
+exec_prefix=/usr/X11R6/bin
+libdir=/usr/X11R6/lib
+includedir=/usr/X11R6/include
+
+Name: Xcursor
+Description: X Cursor library
+Version: 1.0.0
+Requires:
+Libs: -L${libdir} -lXcursor
+Cflags: -I${includedir}

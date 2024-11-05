@@ -1,0 +1,26 @@
+2003 CIS 491 Computer Science Senior Project: NJIT / Rutgers Newark
+Professor Osama Hussein Eljabiri
+
+SnapptixOS SnappCluster
+Simple low-cost out-of-the-box clustering solution for 
+small businesses to have high-availability services 
+
+Project Manager:    William G. Beeck
+System Analyst:     Sriram Polepeddi (Ram)
+System Architect:   Benjamin L Speiser (Baruch) 
+Front-End Designer: Adebayo Browne
+Unix Engineer:      Ryan Tolboom
+UI Developer:       Mehul Shah
+
+This is presented as-is. Keep in mind that this was a bunch of
+college students  - with no practical real-world experience but 
+lots of ambition - who set out to prove that they could build
+something much more interesting than just a working web application. 
+
+This team succeeded in producing a custom Unix distribution
+that could be installed on off-the-shelf hardware. It only
+supported simple file sharing services (samba), but it did
+properly work and failover as expected. 
+
+
+

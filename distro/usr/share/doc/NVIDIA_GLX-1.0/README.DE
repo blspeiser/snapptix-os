@@ -1,0 +1,2647 @@
+Installationshinweise für die beschleunigten NVIDIA Linux Treiber
+
+Letztes Update: $Date: 2002/08/22 $
+Aktuellster Treiber: 1.0-3122
+
+
+Die beschleunigten NVIDIA Linux Treiber bieten für Linux (x86) bei
+Verwendung von NVIDIA Grafikprozessoren (GPUs) sowohl beschleunigte
+2D Funktionalität als auch Hochleistungs OpenGL Unterstützung.
+
+Diese Treiber ermöglichen optimierte OpenGL Hardwarebeschleunigung
+über einen Direct Rendering X Server und unterstützen nahezu alle
+NVIDIA Grafikchips (eine Auflistung aller unterstützten Chipsätze
+finden Sie in ANHANG A). TwinView, TV-Out und Flachbildschirme werden
+ebenfalls unterstützt.
+
+Diese README beschreibt, wie die Treiber installiert, konfiguriert und
+genutzt werden können. Sie wird auf NVIDIAs Website (www.nvidia.com)
+zum Download bereitgestellt und wird in /usr/share/doc/NVIDIA_GLX-1.0
+installiert (mit dem NVIDIA_GLX Paket).
+
+
+__________________________________________________________________________
+
+INHALT:
+
+ (abs-01) WAHL DES GEEIGNETEN NVIDIA PAKETES FÜR IHR SYSTEM
+ (abs-02) INSTALLATION DER NVIDIA_KERNEL UND NVIDIA_GLX PAKETE
+ (abs-03) ANPASSUNG IHRER XF86CONFIG DATEI
+ (abs-04) HÄUFIG GESTELLTE FRAGEN (FAQ)
+ (abs-05) ANSPRECHPARTNER
+ (abs-06) WEITERE RESSOURCEN
+
+ (anh-a)  ANHANG A: UNTERSTÜTZTE NVIDIA GRAFIKCHIPS
+ (anh-b)  ANHANG B: MINDESTANFORDERUNGEN AN DIE SOFTWARE
+ (anh-c)  ANHANG C: INSTALLIERTE KOMPONENTEN
+ (anh-d)  ANHANG D: XF86CONFIG OPTIONEN
+ (anh-e)  ANHANG E: DIE OPENGL UMGEBUNGSVARIABLE (EINSTELLUNGEN)
+ (anh-f)  ANHANG F: AGP KONFIGURATION
+ (anh-g)  ANHANG G: ALI SPEZIFISCHE PROBLEME
+ (anh-h)  ANHANG H: TNT SPEZIFISCHE PROBLEME
+ (anh-i)  ANHANG I: TWINVIEW KONFIGURATION
+ (anh-j)  ANHANG J: TV-OUT KONFIGURATION
+ (anh-k)  ANHANG K: LAPTOP KONFIGURATION
+ (anh-l)  ANHANG L: VIDEO MODE PROGRAMMIERUNG
+ (anh-m)  ANHANG M: PAGE FLIPPING, WINDOW FLIPPING UND UBB
+ (anh-n)  ANHANG N: BEKANNTE PROBLEME
+ (anh-o)  ANHANG O: PROC INTERFACE
+ (anh-p)  ANHANG P: XVMC UNTERSTÜTZUNG
+ (anh-q)  ANHANG Q: GLX UNTERSTÜTZUNG
+
+Um die Installationsanweisungen kurz zu halten werden die meisten
+Einschränkungen und häufig auftretende Probleme nicht detailliert
+in den Anweisungen sondern im FAQ Abschnitt erläutert. Es wird aus
+diesem Grunde empfohlen, diese README Datei vollständig zu lesen,
+bevor Sie die beschriebenen Schritte ausführen.
+
+
+__________________________________________________________________________
+
+(abs-01) WAHL DES GEEIGNETEN NVIDIA PAKETES FÜR IHR SYSTEM
+__________________________________________________________________________
+
+NVIDIA benutzt ein einheitliches Treiberarchitekturmodell, derselbe
+Treiber kann mit beliebiger, unterstützter NVIDIA Hardware verwendet
+werden. Eine vollständige Auflistung der durch die aktuellen Treiber
+unterstützten NVIDIA Hardware finden Sie in ANHANG A.
+
+Die beschleunigten NVIDIA Linux Treiber bestehen aus zwei Paketen die
+separat heruntergeladen und installiert werden müssen: das NVIDIA_GLX
+Paket, das die OpenGL Bibliotheken und den XFree86 Treiber beinhaltet,
+und das NVIDIA_kernel Paket, das das NVdriver Kernelmodul enthält.
+Dieses wird von dem XFree86 Treiber und von den OpenGL Bibliotheken
+benötigt (weitere Informationen über die Komponenten der verschiedenen
+Pakete finden Sie in ANHANG C). Es ist wichtig, dass nur Pakete mit
+identischen Versionsnummern installiert werden (z.B. NVIDIA_GLX-1.0-2910
+sollte mit NVIDIA_kernel-1.0-2960 und nicht mit NVIDIA_kernel-1.0-2880
+verwendet werden).
+
+Die Pakete sind in verschiedenen Formaten erhältlich: als RPM, SRPM und
+als TAR Archiv. Die Installation der einzelnen Pakete wird weiter unten
+beschrieben. Die Wahl des Pakettyps hängt vor allem von persöhnlichen
+Vorlieben ab; beachten Sie aber bitte, dass die binären RPMs nur für die
+Verwendung mit dem Kernel, der mit der entsprechenden Distribution
+geliefert wurde, geeignet sind (NVIDIA_kernel-1.0-2960.rh73up.i386.rpm
+sollte nur mit dem RedHat 7.3 UP Kernel verwendet werden).
+
+Wenn angebracht, hat NVIDIA getrennte RPMs für den SMP und den UP Kernel
+verschiedener Distributionen bereitgestellt. Falls Sie Ihren Kernel
+aktualisiert haben (manuell oder durch ein Distributions-Upgrade) oder
+keine passende NVIDIA_kernel RPM Datei für Ihre Distribution erhältlich
+ist, verwenden Sie entweder das NVIDIA_kernel SRPM oder das TAR Archiv.
+
+In den Fällen, in denen der Distributor mehrere Kernel ausliefert (dies
+ist häufig für UP und SMP Maschienen der Fall) sind mehrere RPM Dateien
+erhältlich, z.B. NVIDIA_kernel-1.0-2960.rh73up.i686.rpm für UP und für
+SMP NVIDIA_kernel-1.0-2960.rh73smp.i686.rpm.
+
+Das NVIDIA_GLX RPM ist jedoch nicht von der Kernelversion abhängig, aus
+diesem Grunde ist kein SRPM Paket erforderlich. Installieren Sie das GLX
+Paket entweder mit Hilfe der RPM oder der TAR Archiv Datei.
+
+
+__________________________________________________________________________
+
+(abs-02) INSTALLATION DER NVIDIA_KERNEL UND NVIDIA_GLX PAKETE
+__________________________________________________________________________
+
+BEVOR SIE MIT DER INSTALLATION DER TREIBER BEGINNEN
+
+Verlassen Sie den X-Server, bevor Sie mit der Installation beginnen.
+Darüber hinaus ist es empfehlenswert, den Standard run-level so zu
+ändern, dass Ihr System bootet, ohne den X Server zu starten (bitte
+lesen Sie die Dokumentation, die Sie mit Ihrer Linux Distribution
+erhalten haben, falls Sie sich nicht sicher sind, wie Sie vorgehen
+müssen). Das macht es einfacher, eventuell während der Installation
+auftretende Probleme später wieder zu beheben.
+
+Beachten Sie, dass die Paket Revisionen in den folgenden Anweisungen
+ausgelassen wurden, um sie so allgemein wie möglich zu halten. Wenn
+in den Anweisungen z.B. "NVIDIA_kernel.tar.gz" erwähnt wird, sollten
+Sie diese Bezeichnung durch die Treiberversion, die Sie installieren,
+ersetzen, z.B.: "NVIDIA_kernel.1.0-2960.tar.gz".
+
+
+INSTALLATION MIT RPMS
+
+Anweisungen für Ungeduldige:
+
+        $ rpm -ivh NVIDIA_kernel.i386.rpm
+        $ rpm -ivh NVIDIA_GLX.i386.rpm
+
+Anweisungen:
+
+Bitte stellen Sie vor der Installation der RPM Datei sicher, dass Sie
+das korrekte NVIDIA_kernel RPM für Ihren Kernel heruntergeladen haben.
+Sobald dies sichergestellt ist können Sie NVIDIA_kernel wie folgt
+installieren:
+
+        $ rpm -ivh NVIDIA_kernel.i386.rpm
+
+Installieren Sie danach die NVIDIA_GLX RPM wie folgt:
+ 
+        $ rpm -ivh NVIDIA_GLX.i386.rpm
+
+
+UPGRADE MIT RPMS
+
+Anweisungen für Ungeduldige:
+
+        $ rpm -Uvh NVIDIA_kernel.i386.rpm
+        $ rpm -e NVIDIA_GLX
+        $ rpm -ivh NVIDIA_GLX.i386.rpm
+
+Anweisungen:
+
+
+Stellen Sie vor dem Upgrade der RPM Datei sicher, dass Sie das
+richtibe NVIDIA_kernel RPM für Ihren Kernel heruntergeladen haben.
+Sobald dies sichergestellt ist, können Sie NVIDIA_kernel wie folgt
+installieren:
+
+        $ rpm -Uvh NVIDIA_kernel.i386.rpm
+
+Die '-U' Option sollte nicht verwendet werden, um die NVIDIA_GLX RPM
+zu aktualisieren, da ein Bug im Deinstallationsbereich älterer NVIDIA
+RPMs einige Dateien entfernen würde, die nicht entfernt werden sollten.
+Verwenden Sie stattdessen für die Deinstallation der alten NVIDIA_GLX
+RPMs die '-e' und installieren Sie dann die neue Version:
+
+        $ rpm -e NVIDIA_GLX
+        $ rpm -ivh NVIDIA_GLX.i386.rpm
+
+
+INSTALLATION/UPGRADE MIT SRPMS
+
+Anweisungen für Ungeduldige:
+
+        $ rpm --rebuild NVIDIA_kernel.src.rpm
+        $ rpm -ivh /path/to/rpms/RPMS/i386/NVIDIA_kernel.i386.rpm
+        $ rpm -ivh NVIDIA_GLX.i386.rpm
+
+Anweisungen:
+
+Um ein angepasstes NVIDIA_kernel RPM für Ihr System zu erstellen,
+übergehen Sie das '--rebuild' Flag:
+
+        $ rpm --rebuild NVIDIA_kernel.src.rpm
+
+Anmerkung: Neuere Versionen von RPM unterstützen nicht länger die
+"--rebuild" Option, an ihre Stelle ist folgender Befehl getreten:
+
+    $ rpmbuild --rebuild NVIDIA_kernel.src.rpm
+
+Achten Sie auf eine Zeile, die der folgenden ähnelt (der Pfad kann
+abweichen):
+
+        Wrote: /usr/src/redhat/RPMS/i386/NVIDIA_kernel.i386.rpm
+        
+und verwenden Sie dies als Eingabe um das RPM zu installieren:
+
+        $ rpm -ivh /usr/src/redhat/RPMS/i386/NVIDIA_kernel.i386.rpm
+
+oder für das Upgrade:
+
+        $ rpm -Uvh /usr/src/redhat/RPMS/i386/NVIDIA_kernel.i386.rpm
+
+
+Bitte folgen Sie den obigen Anweisungen um das NVIDIA_GLX Paket zu
+installieren.
+
+
+INSTALLATION/UPGRADE MIT TAR ARCHIVEN
+
+Anweisungen für Ungeduldige:
+ 
+        $ tar xvzf NVIDIA_kernel.tar.gz
+        $ tar xvzf NVIDIA_GLX.tar.gz
+        $ cd NVIDIA_kernel
+        $ make install
+        $ cd ../NVIDIA_GLX
+        $ make install
+ 
+Anweisungen:
+
+Entpacken Sie beide Dateien, um den Inhalt des Archivs zu installiern:
+
+        $ tar xvzf NVIDIA_kernel.tar.gz
+        $ tar xvzf NVIDIA_GLX.tar.gz
+
+Wechseln Sie mit Hilfe des cd Befehls in das NVIDIA_kernel Verzeichnis.
+Geben Sie 'make install' ein. Durch diese Eingabe wird das Kernel
+Interface des NVdriver Moduls kompiliert, das Module gelinkt, an den
+richtigen Ort kopiert und versucht, es in den laufenden Kernel zu laden:
+
+        $ cd NVIDIA_kernel
+        $ make install
+
+Wechseln Sie danach in das NVIDIA_GLX Verzeichnis. Geben Sie 'make
+install' ein um die benötigten OpenGL und XFree86 Dateien an den
+richtigen Ort zu kopieren.
+
+        $ cd ../NVIDIA_GLX
+        $ make install
+
+Bitte beachten Sie, dass die Eingabe "make install" für jedes Paket alle 
+vorher installierten NVIDIA Treiber entfernt.
+
+
+__________________________________________________________________________
+
+(abs-03) ANPASSUNG IHRER XF86CONFIG DATEI
+__________________________________________________________________________
+
+Die in XFree86 4.0 benutzte Syntax für die XF86Config Datei unterscheidet
+sich geringfügig von derjenigen, die in 3.x benutzt wurde. Damit 3.x und
+4.x auf demselben System koexistieren können wurde entschieden, dass 4.x
+die Konfigurationsdatei "/etc/X11/XF86Config-4" verwendet, insofern diese
+existiert, ansonsten die Ursprüngliche "/etc/X11/XF86Config" (dies ist
+eine stark vereinfachte Beschreibung der Suchkriterien; die XF86Config
+man Seite beinhaltet eine vollständige Beschreibung des Suchpfads). Sie
+sollten sicher sein, welche Konfigurationsdatei XFree86 auf Ihrem System
+verwendet, im Zweifelsfall gibt die XFree86 Logdatei darüber Auskunft;
+suchen Sie nach einer Zeile, die mit "(==) Using config file:" beginnt.
+
+Diese README verwendet unabhängig von dem tatsächlichen Namen die
+Bezeichnung "XF86Config" für die XFree86 Konfigurationsdatei.
+
+Falls Sie nicht über eine funktionierende XF86Config Datei verfügen, gibt
+es mehrere Möglichkeiten, zu beginnen: sowohl XFree86 als auch NVIDIA_GLX
+beinhalten Beispiel XF86Config Dateien. Sie können darüber hinaus ein
+Programm wie 'xf86config' verwenden; einige Distributionen liefern eigene
+Hilfsmittel zum Generieren einer XF86Config Datei. Weitere Informationen
+über die XF86Config Syntax erhalten Sie auf der XF86Config man Seite.
+
+Falls Sie bereits über eine XF86Config Datei verfügen, die problemlos mit
+einem anderen Treiber funktioniert (z.B. mit dem 'nv' Treiber), müssen
+Sie lediglich die entsprechende "Device Section" finden und die Zeile:
+
+        Driver "nv" 
+  (oder Driver "vesa")
+
+durch
+
+        Driver "nvidia"
+        
+ersetzen.
+
+In der "Module Section" muss Folgendes erscheinen:
+
+        Load  "glx"
+
+Die folgenden Zeilen sollten entfernt werden:
+ 
+        Load "dri"
+        Load "GLcore"
+
+falls diese existieren. Es gibt viele Optionen, die der XF86Config Datei
+hinzugefügt werden können, um Feineinstellungen vorzunehmen. 
+Eine vollständige Liste dieser Optionen finden Sie in ANHANG D.
+
+Sobald Sie Ihre XF86Config Datei angepasst haben, können Sie den X Server
+neu starten und die beschleunigten OpenGL Bibliotheken nutzen.
+
+Nachdem Sie X neu gestartet haben, sollten Sie jede OpenGL Applikationen
+ausführen können; diese werden automatisch die neuen NVIDIA Bibliotheken
+nutzen. Möglichkeiten zur Problembeseitigung finden Sie weiter unten im
+Abschnitt HÄUFIG GESTELLTE FRAGEN (FAQ).
+
+
+__________________________________________________________________________
+
+(abs-04) HÄUFIG GESTELLTE FRAGEN (FAQ)
+__________________________________________________________________________
+
+
+F:  Wie kann ich am besten die Ursache für Probleme mit dem X Server
+    feststellen?
+
+A:  Eines der nützlichsten Werkzeuge bei der Diagnostizierung von
+    Problemen ist die XFree86 Logdatei "/var/log/XFree86.<#>.log" (wobei
+    "<#>" die Nummer des X Servers darstellt - üblicherweise 0). Zeilen,
+    die mit "(II)" beginnen, sind Information, "(WW)" sind Warnungen und
+    "(EE)" Fehlermeldungen. Stellen Sie sicher, dass XFree86 die korrekte
+    XF86Config Konfigurationsdatei verwendet (d.h. diejenige Datei, die
+    Sie bearbeiten, siehe oben). Stellen Sie ausserdem sicher, dass der
+    NVIDIA Treiber anstelle des 'nv' Treibers verwendet wird; suchsen Sie
+    nach "(II) LoadModule: "nvidia""; Zeilen, die durch den Treiber
+    ausgegeben werden, sollten wie folgt beginnen: "(II) NVIDIA(0)".
+
+
+F:  Wie bringe ich X dazu mehr Informationen auszugeben?
+
+A:  Normalerweise gibt der NVIDIA XFree86 Treiber recht wenig Meldungen
+    an stderr und in der XFree86 Logdatei aus. Falls sie ein Problem
+    beheben müssen, kann es hilfreich sein, umfangreichere Informationen
+    zu erhalten; sie können das durch die XFree86 Befehlszeilenoptionen
+    "-verbose" und "-logverbose" erreichen. Der NVIDIA XFree86 Treiber
+    givt mehr Meldungen aus, wenn dieser "Verbosity Level" auf "5" oder
+    höher eingestellt wird (XFree86 benuzt standardmässig "1" für stderr
+    und "3" für die Logdatei). 
+    
+    Benutzen Sie 'startx -- -verbose 5 -logverbose 5' um den X Server mit
+    einem höheren "Verbosity Level" zu starten.
+
+
+F:  Mein X Server startet nicht, und meine XFree86 Logdatei beinhaltet
+    folgende Fehlermeldung:
+
+    "(EE) NVIDIA(0): Failed to initialize the NVdriver kernel module!"
+
+A:  Nichts wird funktionieren, falls das NVdriver Kernel Modul nicht
+    korrekt arbeitet. Falls Sie eine Meldung wie folgt in der XFree86
+    Logdatei erhalten: "(EE) NVIDIA(0): Failed to initialize the NVdriver
+    kernel module!", besteht höchstwahrscheinlich ein Problem mit dem
+    NVdriver Kernel Modul. Falls Sie ein RPM installiert haben, sollten
+    Sie zunächst überprüfen, ob dieses speziell für den von Ihnen
+    verwendeten Kernel erstellt wurde, und ob es in den Kernel geladen
+    wurde ('/sbin/lsmod'). Sollte es nicht geladen worden sein, versuchen
+    Sie es explizit mit 'insmod' oder 'modprobe' zu laden (der X Server
+    muss vor dem Installieren eines neuen Kernelmoduls verlassen werden).
+    Wenn Sie Fehlermeldungen über "unresolved Symbols" erhalten, ist es
+    wahrscheinlich, dass das Kernel Modul mit Headerdateien einer anderen
+    Kernelversion kompiliert wurde. Sie können explizit kontrollieren,
+    welche Kernel Headerdateien von dem NVIDIA_kernel TAR Archiv benutzt
+    werden: 'make install SYSINCLUDE=/path/to/kernel/headers'.
+
+    Bitte beachten Sie, dass sich die Konvention für den Ort der Kernel
+    Headerdateien und der Module in einem Übergangsstadium befinden. Wird
+    das Kernel Modul nicht einwandfrei geladen, versucht modprobe/insmod
+    möglicherweise, ein älteres Kernelmodul zu laden (angenommen, dass
+    Sie dieses oder den Kernel aktualisiert haben). Es kann hilfreich
+    sein, manuell mit 'cd' in das Verzeichnis mit dem Kernel Modul zu
+    wechseln und dieses mit 'insmod ./NVdriver' explizit zu laden.
+
+    Darüber hinaus besteht die Möglichkeit, dass NVdriver Fehlermeldungen
+    ausgibt, die Hinweise auf das Problem geben können. Diese Meldungen
+    sind üblicherweise in /var/log/messages zu finden, oder in derjenigen
+    Datei, in die 'syslog' Kernel Meldungen ausgibt.
+
+
+F:  Ich kann den X Server starten, aber OpenGL Applikationen stürzen
+    unmittelbar nach dem Start ab.
+
+A:  Falls X gestarted werden kann, OpenGL aber Probleme verursacht, haben
+    Sie wahrscheinlich ein Problem mit anderen Bibliotheken oder toten
+    symbolischen Links. Details hierzu finden Sie in ANHANG C. In einigen
+    Fällen reicht es aus, 'ldconfig' erneut auszuführen.
+
+    Bitte überprüfen Sie auch, ob die korrekten Erweiterungen vorhanden
+    sind, 'xdpyinfo' gibt darüber Auskunft: die "GLX", "NV-GLX" und
+    "NVIDIA-GLX" Erweiterungen sollten erscheinen. Sind diese drei
+    Erweiterungen nicht vorhanden, besteht höchstwahrscheinlich ein
+    Problem mit dem Laden des GLX Moduls oder es ist nicht in der Lage,
+    explizit GLcore zu laden. Überprüfen Sie Ihre XF86Config Datei und
+    das Laden von GLX (siehe "Anpassung Ihrer XF86Config Datei"). Falls
+    Ihre XF86Config Datei korrekt ist, suchen Sie in der XFree86 Logdatei
+    nach Warn-/Fehlermeldungen, die GLX betreffen. Überprüfen Sie auch,
+    ob die notwendigen Symlinks vorhanden sind (siehe Anhang C).
+
+
+F:  Bei der Installation/des Upgrades via SRPM gibt der Befehl:
+        rpm --rebuild NVIDIA_kernel-1.0-2313.src.rpm
+    lediglich eine Liste von Befehlszeilenoptionen aus.
+
+A:  Sie haben vermutlich die RPM Entwicklungspakete nicht installiert.
+    In den meisten Fällen kann dieses Problem durch die Installation des
+    RPM-Devel Pakets für Ihre Distribution behoben werden. Alternativ
+    können Sie anstelle des RPMs die TAR Archive benutzen, die RPM nicht
+    benötigen.
+
+
+F:  Bei der Installation/des Upgrades via SRPM gibt der Befehl:
+        rpm --rebuild NVIDIA_kernel-1.0-2313.src.rpm
+    folgende Fehlermeldung zurück:
+        NVIDIA_kernel-.src.rpm:no such file or directory
+
+A:  Sie müssen das RPM-Build Paket für Ihre Distribution installieren.
+    Wie im letzen Punkt erwähnt können Sie alternativ die TAR Archive
+    nutzen.
+
+
+F:  Bei der Installation des NVIDIA_kernel Moduls erscheint folgende
+    Fehlermeldung:
+
+        #error Modules should never use kernel-headers system headers 
+        #error but headers from an appropriate kernel-source 
+
+
+A:  Sie müssen die Quellen für Ihren Linux Kernel installieren. In den
+    meisten Fällen kann das Problem durch die Installation des Kernel
+    Quellen Pakets Ihrer Distribution behoben werden.
+
+
+F:  OpenGL Anwendungen stürzen mit folgender Fehlermeldung ab:
+
+        Error: Could not open /dev/nvidiactl because the permissions
+        are too restrictive. Please see the TROUBLESHOOTING section
+        of /usr/share/doc/NVIDIA_GLX-1.0/README for steps to correct.
+
+A:  Wahrscheinlich ändert ein Sicherheitsmodul für das PAM System die
+    die Zugangsberechtigungen für die NVIDIA Gerätedateien.
+    In den meisten Fällen funktioniert dieses Sicherheitssystem; es ist
+    jedoch möglich, dass es durcheinandergerät. Zur Behebung dieses
+    Problems empfehlen wir die Deaktivierung dieses Sicherheitsfeatures.
+
+    Die Linux Distributionen verfügen über unterschiedliche Dateien, die
+    darauf Einfluss haben. Falls Ihr System über die Datei
+    
+        /etc/security/console.perms
+        
+    verfügt, können Sie diese Datei editieren und die Zeile, die mit
+    "<dri>" beginnt, entfernen. Falls Ihr System aber über die Datei
+    
+        /etc/logindevperms
+        
+    verfügt, kann diese Datei editiert werden und die Zeile, die
+    /dev/nvidiactl enthält, entfernt werden. Die weiter oben aufgeführten
+    Schritte verhindern, dass das PAM Sicherheitssystem die Rechte der
+    NVIDIA Gerätedateien ändert. Danach müssen die Zugriffsrechte der
+    Gerätedateien wieder auf die ursprünglichen Berechtigungen und den
+    Besitzer zurückgesetzt werden. Dies kann durch die folgenden Befehle
+    erfolgen:
+ 
+        chmod 0666 /dev/nvidia* chown root /dev/nvidia*
+
+
+A:  OpenGL Anwendungen stürzen mit folgender Warnung ab:
+
+      WARNING: Your system is running with a buggy dynamic loader. This
+      may cause crashes in certain applications. If you experience
+      crashes you can try setting the environment variable
+      __GL_SINGLE_THREADED. For more information please consult (sec-04)
+      TROUBLESHOOTING in the file /usr/share/doc/NVIDIA_GLX-1.0/README.
+
+    Der dynamische Lader auf Ihrem System ist fehlerhaft und kann
+    Abstürze in gegen pthreads gelinkten Anwendungen, die libGL mehrfach
+    mit dlopen() öffnen, verursachen. Dieser Fehler tritt in älteren
+    Versionen des dynamischen Laders auf. Unter anderem liefern folgende
+    Distributionen fehlerhafte Ladern: RedHat Linux 6.2 und Mandrake
+    Linux 7.1. Falls die Anwendung nur einen Thread benutzt kann der
+    Absturz mit der Umbegungsvariable __GL_SINGLE_THREADED vermieden
+    werden. Geben Sie in der bash shell folgenden Befehl ein:
+
+        export __GL_SINGLE_THREADED
+
+    oder im Fall von csh oder Derivaten:
+
+        setenv __GL_SINGLE_THREADED
+
+    Ältere Versionen der beschleunigten NVIDIA Treiber haben versucht,
+    dieses Problem zu umgehen, das hat allerdings Probleme mit anderen
+    Anwendungen verursacht; Versionen nach 1.0-1541 versuchen nicht
+    mehr das Problem zu umgehen.
+
+
+F:  Quake3 stürzt beim wechseln des Videomodus ab, wieso?
+
+A:  Sie haben vermutlich das oben beschriebene Problem. Bitte überprüfen
+    Sie die Textausgabe auf die oben genannte Warnung. Das Setzen der
+    __GL_SINGLE_THREADED Umbegungsvariable vor dem Ausführen von Quake3
+    behebt dieses Problem.
+
+
+F:  Ich kann X nicht starten, und in meiner XFree86 Logdatei erscheint
+    folgende Fehlermeldung:
+
+        (II) LoadModule: "nvidia"
+        (II) Loading /usr/X11R6/lib/modules/drivers/nvidia_drv.o
+        No symbols found in this module
+        (EE) Failed to load /usr/X11R6/lib/modules/drivers/nvidia_drv.o
+        (II) UnloadModule: "nvidia"
+        (EE) Failed to load module "nvidia" (loader failed, 256)
+        ...
+        (EE) No drivers available
+
+A:  Es wurden benötigte Symbole vom nvidia_drv.o Treibermodul entfernt.
+    Einige RPM Versionen entfernen (fälschlicherweise) Symbole von
+    Objektdateien bei der Installation. Sie sollte vermutlich dir RPM
+    Version Ihres Systems aktualisieren. Alternativ können Sie das GLX
+    Paket mit dem TAR Archiv installieren.
+
+
+F:  Mein System läuft zwar, aber anscheinend nicht stabil; wieso?
+
+A:  Eventuell verwenden Sie den falschen AGP Treiber. Details über die
+    AGP Konfiguration finden Sie in ANHANG E.
+
+
+F:  Das Kernelmodul wird nicht automatisch geladen, wenn ich X starte.
+    Ich muss immer manuell 'modprobe NVdriver' ausführen; wieso?
+
+A:  Stellen Sie sicher, dass die Zeile "alias char-major-195 NVdriver"
+    in Ihrer modutils Konfigurationsdatei erscheint, in der Regel eine
+    der folgenden: "/etc/conf.modules", "/etc/modules.conf" oder
+    "/etc/modutils/aliases"; konsultieren Sie die Dokumentation Ihrer
+    Distribution, um Details zu erhalten.
+
+
+F:  Ich kann das NVdriver Kernelmodul nicht kompilieren, oder ich kann
+    das NVdriver Kernelmodul kompilieren aber modprobe/insmod lädt das
+    Modul nicht in meinen Kernel. Was mache ich falsch?
+
+A:  Probleme dieser Art werden in der Regel durch die Verwendung der
+    falschen Kernel Headerdateien verursacht (d.h. Headerdateien für
+    eine andere Kernelversion als diejenige, welche Sie verwenden).
+    Ursprünglich war die Konvention, dass Kernel Headerdateien in dem
+    Verzeichnis "/usr/include/linux/" installiert werden, diese wurde
+    jedoch durch "/lib/modules/`uname -r`/build/include" ersetzt. Das
+    NVIDIA_kernel Makefile sollte in der Lage sein, den Ort auf Ihrem
+    System zu bestimmen; wenn Sie jedoch ein Problem haben, können Sie
+    die Verwendung anderer Headerdateien zu verwenden, indem Sie 'make
+    SYSINCLUDE=/path/to/kernel/headers' benutzen.
+    
+    Damit dies funktionieren kann, müssen die geeigneten Headerdateien
+    auf Ihrem System installiert sein. Lesen Sie die Dokumentation, die
+    Sie mit Ihrer Distribution erhalten haben. Einige Distributionen
+    installieren die Kernel Headerdateien nicht standardmäßig oder es
+    werden Headerdateien installiert, die nicht zu dem Kernel, den Sie
+    benutzen, passen.
+
+
+F:  Warum laufen OpenGL Anwendungen so langsam?
+
+A:  Die Anwendung benutzt wahrscheinlich eine andere Bibliothek anstelle
+    der von NVIDIA gelieferten OpenGL Bibliothek. Details finden Sie in
+    ANHANG C.
+
+
+F:  Ich habe Probleme mit Quake2.
+
+A:  Quake2 erfordert geringfügige Anpassungen, bevor es funktioniert.
+    Das Installationsprogramm erstellt einen Symlink mit dem Namen
+    libGL.so im Quake2 Verzeichnis. Diser Symlink sollte entfernt oder
+    umbenannt werden. Damit Quake2 im OpenGL Modus ausgeführt werden
+    kann, geben Sie 'quake2 +set vid_ref glx +set gl_driver libGL.so'
+    ein. Quake2 scheint keinen Vollbildmodus zu haben, Sie können aber
+    den X Server in jeder Auflösung starten, die in Quake2 möglich ist
+    und so den Vollbildmodus emulieren.
+
+
+F:  Ich habe Probleme mit Heretic II.
+
+A:  Heretic II installiert ebenfalls als Standard den Symlink libGL.so
+    im Installationsverzeichnis. Sie können diesen Symlink entfernen
+    oder umbenennen, da das System dann libGL.so (den unsere Treiber in
+    /usr/lib installieren) findet. Von Heretic II können Sie dann den
+    Rendermodus OpenGL im Videomenü einstellen.
+
+    Es gibt auf der folgenden Website auch einen Patch von lokigames für
+    Heretic II : http://www.lokigames.com/products/heretic2/updates.php3
+
+
+F:  Wo kann ich gl.h oder glx.h zur Kompilierung von OpenGL Programmen
+    erhalten?
+
+A:  Auf den meisten Systemen sind diese Header bereits vorinstalliert.
+    Vorsichtshalber hat NVIDIA jedoch für den Fall, dass Systeme diese
+    nicht beinhalten oder Sie OpenGL Applikationen entwickeln möchten,
+    welche die neuen NVIDIA OpenGL Erweiterungen einsetzen, eigene gl.h
+    und glx.h Headerdateien mitgeliefert.
+    
+    Um Konflikte mit eventuell auf dem System installierten Versionen
+    zu vermeiden, wurden diese in 
+    
+        /usr/share/doc/NVIDIA_GLX-1.0/usr/include/GL 
+        
+    installiert. Um diese Headerdateien zu verwenden, kopieren Sie sie
+    in /usr/include/GL.
+
+
+F:  Kann ich eine E-Mail-Benachrichtigung über neue Versionen der 
+    beschleunigten NVIDIA Linux Treiber erhalten?
+
+A:  Ja. Füllen Sie dazu das Formular auf der folgenden Seite aus: 
+    
+        http://www.nvidia.com/view.asp?FO=driver_update
+
+
+F:  Mein System hängt sich auf, wenn ich zu einer anderen virtuellen
+    Konsole wechsle und rivafb benutze.
+
+A:  Die gleichzeitige Verwendung von rivafb und dem NVdriver Modul ist
+    gegenwärtig problematisch. Im Allgemeinen ist es keine gute Idee,
+    zwei unahängige Treiber für die gleiche Hardware zu verwenden.
+
+
+F:  Das Kompilieren des NVdriver Kernelmoduls erzeugt folgende
+    Fehlermeldung:
+
+        You appear to be compiling the NVdriver kernel module with
+        a compiler different from the one that was used to compile
+        the running kernel. This may be perfectly fine, but there
+        are cases where this can lead to unexpected behaviour and
+        system crashes.
+
+        If you know what you are doing and want to override this
+        check, you can do so by setting IGNORE_CC_MISMATCH.
+
+        In any other case, set the CC environment variable to the
+        name of the compiler that was used to compile the kernel.
+
+A:  Sie sollten das NVdriver Modul mit demselben Compiler übersetzen,
+    der für Ihren Kernel benutzt wurde. Einige Linux Kernel Daten -
+    Strukturen hängen von der benutzen GCC Version ab, zum Beispiel:
+
+    .../include/linux/spinlock.h
+
+        ...
+        * Most gcc versions have a nasty bug with empty initializers.
+        */
+        #if (__GNUC__ > 2)
+          typedef struct { } rwlock_t;
+          #define RW_LOCK_UNLOCKED (rwlock_t) { }
+        #else
+          typedef struct { int gcc_is_buggy; } rwlock_t;
+          #define RW_LOCK_UNLOCKED (rwlock_t) { 0 }
+        #endif
+
+    Falls der Kernel mit GCC 2.x kompiliert wurde, aber GCC 3.x beim
+    Übersetzen des NVdriver Kernelmoduls benutzt wird (oder umgekehrt)
+    so variiert die Grösse von rwlock_t, und Funktionen wie ioremap
+    funktionieren nicht länger korrekt.
+
+    Um herauszufinden, welche Version von GCC beim Übersetzen Ihres
+    Kernels benutzt wurde, überprüfen Sie die Ausgabe von:
+
+        cat /proc/version
+
+    Entsprechend kann die Version von GCC, die sich in ihrem $PATH
+    befindet folgendermassen festgestellt werden:
+
+        gcc -v 2>&1 | tail -1
+
+
+F:  X startet nicht und gibt folgende Fehlermeldung aus:
+        "Failed to allocate LUT context DMA"
+
+A:  Dies ist eine der möglichen Konsequenzen wenn das NVdriver Modul
+    einer anderen GCC Version als derjenigen, die zur Verwendung des
+    Linux Kernels benutzt wurde, kompiliert wurde (siehe oben).
+
+
+F:  Es sind keine NVIDIA_kernel RPMs für Version N von <Ihre bevorzugte
+    Linux Distribution hier> verfügbar. Ich habe versucht, das RPM 
+    für Version N-1 zu installieren, das hat jedoch nicht funktioniert.
+    Was soll ich tun?
+
+A:  Wie in (abs-01) WAHL DES GEEIGNETEN NVIDIA PAKETES FÜR IHR SYSTEM
+    beschrieben: 
+
+    "Falls Sie Ihren Kernel aktualisiert haben (manuell oder durch ein
+     Distributions-Upgrade) oder keine spezifische NVIDIA_kernel RPM
+     Datei für Ihre Distribution erhältlich ist, verwenden Sie entweder
+     das NVIDIA_kernel SRPM oder das TAR Archiv."
+
+
+F:  Ich erhalte folgende Meldung, wenn ich das NVIDIA_GLX Paket auf
+    meinem System installiere:
+
+     --- The above file(s) possibly belong to a conflicting MESA rpm.
+     --- They have been renamed to xxx.<originalFile>.RPMSAVE to
+     --- avoid conflicting with the files contained within this
+     --- package.
+     --- Please see the FREQUENTLY ASKED QUESTIONS section of
+     --- /usr/share/doc/NVIDIA_GLX-1.0/README for more details.
+
+    Woran liegt das?
+
+A:  Es wurden miteinander in Konflikt stehenden Dateien beseitigt, um
+    sicherzustellen, dass Ihre Applikationen die neu installierten
+    OpenGL Bibliotheken finden. Dies ist kein Grund zur Beunruhigung,
+    diese Meldung dient ausschließlich als Information. Sobald Sie das
+    NVIDIA_GLX Paket deinstallieren, werden die ursprünglichen Dateien
+    automatisch wiederhergestellt.
+
+
+F:  Was ist NVIDIA's Standpunkt gegenüber Linux Entwickler Kerneln?
+
+A:  NVIDIA unterstützt Entwickler Kernel nicht offiziell. Da jedoch
+    sämtlicher Quellcode, der unmittelbar mit dem Kernel kommuniziert
+    mit dem NVIDIA_kernel Paket geliefert wird, und NVIDIA ermuntert
+    Mitglieder der Linux Gemeinde dazu, Patches zu entwickeln. Eine
+    Google Suche liefert wahrscheinlich mehrere inoffizielle Patches.
+
+
+F:  Ich habe vor kurzem mehrere Bibliotheken auf meinem System mit dem
+    Update Werkzeug meiner Distribution aktualisiert, und die NVIDIA
+    Treiber funktionieren nicht länger. Woran kann das liegen?
+
+A:  Möglicherweise wurden Bibliotheken installiert, die mit den NVIDIA
+    OpenGL Bibliotheken in Konflikt treten. Bitte lesen sie ANHANG C:
+    INSTALLIERTE KOMPONENTEN für Details zur Behebung des Problems.
+
+F: "rpm --rebuild" bricht mit dem Fehler "Unbekannte Option" ab
+
+A: Neuere RPM Versionen unterstützen nicht länger die "--rebuild"
+   Option, benutzen Sie in diesen Fällen "rpmbuild --rebuild". Das
+   "rpmbuild" Hilfsprogramm wird durch das rpm-build Paket bereit-
+   gestellt.
+
+__________________________________________________________________________
+
+(abs-05) ANSPRECHPARTNER
+__________________________________________________________________________
+
+
+Es gibt ein neues Webforum für Themen, die den NVIDIA Linux Treiber
+betreffen. Sie können dieses erreichen, indem sie auf www.nvnews.net
+den Links "Forum" und "Linux Discussion Area" folgen. Dieses Forum
+ist das zu bevorzugende Werkzeug bei der Hilfesuche; die Benutzer
+können Fragen stellen, Fragen anderer Benutzer beantworten und die
+Archive auf bereits gelöste Problemfälle hin durchsuchen.
+
+Sollte alles andere fehlschlagen, können Sie Unterstützung durch ein
+Email an folgende Email Addresse erhalten: linux-bugs@nvidia.com. Bitte
+beachten Sie, dass diese Adresse die letzte Anlaufstelle ist, nachdem
+Sie die Problembehandlung in dieser README befolgt und in dem Forum auf
+nvnews.net nach Hilfe gesucht haben.
+
+
+__________________________________________________________________________
+
+(abs-06) WEITERE RESSOURCEN
+__________________________________________________________________________
+
+Linux OpenGL ABI
+http://oss.sgi.com/projects/ogl-sample/ABI/
+
+NVIDIA Linux HowTo
+http://www.linuxdoc.org/HOWTO/mini/Nvidia-OpenGL-Configuration/index.html
+
+OpenGL
+www.opengl.org
+
+The XFree86 Project
+www.xfree86.org
+
+#nvidia (irc.openprojects.net)
+
+
+__________________________________________________________________________
+
+(anh-a)  ANHANG A: UNTERSTÜTZTE NVIDIA GRAFIKCHIPS
+__________________________________________________________________________
+
+  NVIDIA CHIP NAME               PCI ID
+
+  o RIVA TNT                     0x0020
+  o RIVA TNT2                    0x0028
+  o RIVA TNT2 Ultra              0x0029
+  o Vanta                        0x002C
+  o RIVA TNT2 Model 64           0x002D
+  o Aladdin TNT2                 0x00A0
+  o GeForce 256                  0x0100
+  o GeForce DDR                  0x0101
+  o Quadro                       0x0103
+  o GeForce2 MX/MX 400           0x0110
+  o GeForce2 MX 100/200          0x0111
+  o GeForce2 Go                  0x0112
+  o Quadro2 MXR/EX/Go            0x0113
+  o GeForce2 GTS                 0x0150
+  o GeForce2 Ti                  0x0151
+  o GeForce2 Ultra               0x0152
+  o Quadro2 Pro                  0x0153
+  o GeForce4 MX 460              0x0170
+  o GeForce4 MX 440              0x0171
+  o GeForce4 MX 420              0x0172
+  o GeForce4 440 Go              0x0174
+  o GeForce4 420 Go              0x0175
+  o GeForce4 420 Go 32M          0x0176
+  o Quadro4 500/550XGL           0x0178
+  o GeForce4 440 Go 64M          0x0179
+  o Quadro4 200/400NVS           0x017A
+  o Quadro4 500 GoGL             0x017C
+  o GeForce4 440 Go 16M          0x017D
+  o GeForce2 Integrated GPU      0x01A0
+  o GeForce3                     0x0200
+  o GeForce3 Ti 200              0x0201
+  o GeForce3 Ti 500              0x0202
+  o Quadro DCC                   0x0203
+  o GeForce4 Ti 4600             0x0250
+  o GeForce4 Ti 4400             0x0251
+  o GeForce4 Ti 4200             0x0253
+  o Quadro4 900XGL               0x0258
+  o Quadro4 750XGL               0x0259
+  o Quadro4 700XGL               0x025B
+
+
+Bitte beachten Sie, dass die RIVA 128/128ZX Chips vom Open Source 'nv'
+Treiber für XFree86 unterstützt werden, nicht durch die beschleunigten
+NVIDIA Linux Treiber.
+
+Falls Sie die PCI ID Ihrer Karte mit der obigen Tabelle vergleichen
+möchten, können Sie entweder `cat /proc/pci` oder `lspci -n` verwenden.
+Im letzteren Fall achten Sie auf den Herstellercode "10de", z.B.:
+
+    02:00.0 Class 0300:10de:0100 (rev 10)
+
+
+__________________________________________________________________________
+
+(anh-b)  ANHANG B: MINDESTANFORDERUNGEN AN DIE SOFTWARE
+__________________________________________________________________________
+
+  o linux kernel     2.2.12   # cat /proc/version
+  o XFree86          4.0.1    # XFree86 -version
+  o Kernel modutils  2.1.121  # insmod -V
+
+    Falls Sie das NVdriver Kernelmodul übersetzen müssen:
+
+  o binutils         2.9.5    # size --version
+  o GNU make         3.77     # make --version
+  o gcc              2.91.66  # gcc --version
+
+    Falls Sie SRPMs benutzen:
+
+  o spec-helper rpm           # rpm -qi spec-helper
+
+Es werden alle offiziellen stabilen Kernel ab Linux 2.2.12 unterstützt,
+nicht aber Vorabversionen wie "2.4.3-pre2" oder Entwicklerkernel wie
+2.3.x oder 2.5.x. Der Linux Kernel kann von www.kernel.org oder einem
+der Mirrors bezogen werden.
+
+Binutils und gcc sind nur erforderlich, wenn Sie das NVIDIA_kernel Paket
+von einem SRPM oder einer Archivdatei kompilieren möchten und können von
+www.gnu.org oder dessen Mirrorn bezogen werden.
+
+Bitte beachten Sie: Binutils und gcc sind bei binären RPM Installationen
+nicht erforderlich.
+
+Wenn Sie XFree86 verwenden, aber über keine /var/log/XFree86.0.log Datei
+verfügen, benutzen Sie wahrscheinlich eine 3.x Version von XFree86 und
+müssen diese zunächst aufrüsten.
+
+Falls Sie XFree86 4 zum ersten Mal konfigurieren, ist es oft einfacher,
+einen der Open Source Treiber zu verwenden, der mit XFree86 geliefert
+wird (entweder 'nv', 'vga' oder 'vesa'). Sobald XFree86 ordnungsgemäß
+mit dem Open Source Treiber funktioniert ist es einfacher, auf den
+NVIDIA Treiber umzustellen.
+
+Bitte beachten Sie, dass neuere NVIDIA GPUs eventuell nicht mit älteren
+Versionen des "nv" Treibers funktionieren, die zusammen mit XFree86
+geliefert werden. Der "nv" Treiber zum Beispiel, der mit der XFree86
+Version 4.0.1 ausgeliefert wurde, hat die GeForce2 Familie und die
+Quadro2 MXR GPUs nicht erkannt. Dies wurde jedoch in der XFree86 Version
+4.0.2 behoben (XFree86 kann bezogen werden unter: www.xfree86.org).
+
+Diese Softwarepakete können in der Regel auch von Ihrem Linux Distributor
+bezogen werden.
+
+
+__________________________________________________________________________
+
+(anh-c)  ANHANG C: INSTALLIERTE KOMPONENTEN
+__________________________________________________________________________
+
+Die beschleunigten NVIDIA Linux Treiber bestehen aus den folgenden
+Komponented (die Datei in Klammern steht für den vollständigen Namen
+nach der Installation; "x.y.z" steht für die aktuelle Version; die
+korrekted symbolischen Links werden automatisch erstellt):
+
+  o Ein XFree86 Treiber (/usr/X11R6/lib/modules/drivers/nvidia_drv.o);
+    dieser Treiber wird von XFree86 zur Verwendung Ihrer NVIDIA Hardware
+    benötigt. Der nvidia_drv.o Treiber ist binär-kompatibel mit XFree86
+    4.0.1 und höher.
+
+  o Ein GLX Erweiterungsmodul für XFree86 
+    (/usr/X11R6/lib/modules/extensions/libglx.so.x.y.z); dieses Modul
+    wird von Free86 verwendet, um GLX-Support von der Serverseite zu
+    bieten.
+
+  o Eine OpenGL Bibliothek (/usr/lib/libGL.so.x.y.z); diese Bibliothek
+    enthält die API Schnittstelle für OpenGL und GLX. Sie wird während
+    der Laufzeit mit OpenGL Applikationen gelinkt.
+
+  o Eine OpenGL Kernbibliothek (/usr/lib/libGLcore.so.x.y.z); diese
+    Bibliothek wird implizit von libGL und libglx verwendet. Sie
+    stellt die kernbeschleunigte 3D-Funktionalität bereit. Sie sollten
+    sie nicht explizit in Ihrer XF86Config Datei laden; dies wird durch
+    libglx erledigt.
+
+  o Ein Linux Kernelmodul (/lib/modules/`uname -r`/video/NVdriver oder
+    /lib/modules/`uname -r`/kernel/drivers/video/NVdriver). Dieses Modul
+    wird von den obigen Komponented benötigt, um auf die NVIDIA Hardware
+    zugreifen zu können. Es wird automatisch in den Kernel geladen, wenn
+    der X Server gestartet wird und wird vom XFree86 Treiber und OpenGL
+    verwendet. Der NVdriver besteht aus zwei Elementen: dem Nur-Binär
+    Kern und einer Kernelschnittstelle, die spezifisch für Ihre Version
+    des Linux Kernels kompiliert werden muss. Bitte beachten Sie, dass
+    der Linux Kernel nicht über eine konsistente binäre Schnittstelle
+    wie XFree86 verfügt, es ist wichtig, dass die Kernelschnittstelle
+    mit der Version des Kernels übereinstimmt, den Sie verwenden. Dies
+    können Sie erreichen, indem Sie selbst kompilieren oder nur solche
+    vorkompilierte Binaries verwenden, die für die Kernel gebräuchlicher
+    Linux Distributionen ausgeliefert werden.
+
+  o OpenGL und GLX Headerdateien
+    (/usr/share/doc/NVIDIA_GLX-1.0/usr/include/GL/gl.h,
+    /usr/share/doc/NVIDIA_GLX-1.0/usr/include/GL/glx.h). In den meisten
+    Fällen werden die vom System angebotenen /usr/include/GL Header für
+    die OpenGL Entwicklung ausreichen. NVIDIA hat diese Header jedoch
+    mitgeliefert, da sie die aktuellen Versionen der NVIDIA OpenGL
+    Erweiterungen beinhalten. Falls Sie diese Header verwenden möchten
+    ist es empfehlenswert, dass Sie diese in /usr/include/GL/ kopieren.
+
+    Die ersten vier der oben aufgeführten Komponenten (XFree86 Treiber,
+    GLX Modul, libGL und libGLcore) sind im NVIDIA_GLX Paket enthalten.
+    Das NVdriver Kernelmodul ist im NVIDIA_kernel Paket enthalten.
+
+    Die Dokumentation und die OpenGL und GLX Headerdateien sind
+     ebenfalls Bestandteil des NVIDIA_GLX Pakets und werden in
+    /usr/share/doc/NVIDIA_GLX-1.0 installiert.
+
+Es können Probleme auftreten, falls Anwendungen die falsche Version
+einer Bibliothek verwenden. Dies kann der Fall sein, wen entweder alte
+libGL Bibliotheken oder tote symbolische Links vorhanden sind. Falls
+Sie den Eindruck habe, dass etwas mit Ihrer Installation nicht in
+Ordnung ist, sollten Sie überprüfen, ob die folgenden Dateien an den
+richtigen Orten installiert sind:
+
+        /usr/X11R6/lib/modules/drivers/nvidia_drv.o
+
+        /usr/X11/lib/modules/extensions/libglx.so.x.y.z
+        /usr/X11/lib/modules/extensions/libglx.so -> libglx.so.x.y.z
+
+        /usr/lib/libGL.so.x.y.z
+        /usr/lib/libGL.so.x -> libGL.so.x.y.z
+        /usr/lib/libGL.so -> libGL.so.x
+
+        /usr/lib/libGLcore.so.x.y.z
+        /usr/lib/libGLcore.so.x -> libGLcore.so.x.y.z
+
+        /lib/modules/`uname -r`/video/NVdriver, or
+        /lib/modules/`uname -r`/kernel/drivers/video/NVdriver
+
+Bei der Installation des NVIDIA_kernel Pakets werden ausserdem die
+/dev Dateien erstellt:
+
+        crw-rw-rw- 1 root root 195,   0 Feb 15 17:21 nvidia0
+        crw-rw-rw- 1 root root 195,   1 Feb 15 17:21 nvidia1
+        crw-rw-rw- 1 root root 195,   2 Feb 15 17:21 nvidia2
+        crw-rw-rw- 1 root root 195,   3 Feb 15 17:21 nvidia3
+        crw-rw-rw- 1 root root 195, 255 Feb 15 17:21 nvidiactl
+
+Falls andere Bibliotheken auf Ihrem System existieren, deren "soname"
+mit denen der NVIDIA Bibliotheken in Konflikt steht, ist es möglich,
+dass ldconfig die falschen symbolischen Links erstellt.
+
+Es wird empfohlen, dass Sie diese in Konflikt stehenden Bibliotheken
+manuell entfernen oder umbenennen (es ist wichtig, sie so umzubennenen,
+dass ldconfig sie nicht weiter beachtet; ein dem Bibliotheksnamen
+vorgesetztes "XXX" erfüllt diese Aufgabe), 'ldconfig' erneut aufrufen
+und überprüfen, ob die korrekten symbolischen Links erstellt wurden.
+Zwei Beispiele für Bibliotheken, die häufig Konflikte hervorrufen sind
+"/usr/X11R6/lib/libGL.so*" und "/usr/X11R6/lib/libGLcore.so*".
+
+Um sicherzustellen, dass eine Anwendung die richtigen Bibliotheken
+benutzt, z.B. /usr/X11R6/bin/gears, gehen Sie wie folgt vor:
+
+$ ldd /usr/X11R6/bin/gears
+        libglut.so.3 => /usr/lib/libglut.so.3 (0x40014000)
+        libGLU.so.1 => /usr/lib/libGLU.so.1 (0x40046000)
+        libGL.so.1 => /usr/lib/libGL.so.1 (0x40062000)
+        libc.so.6 => /lib/libc.so.6 (0x4009f000)
+        libSM.so.6 => /usr/X11R6/lib/libSM.so.6 (0x4018d000)
+        libICE.so.6 => /usr/X11R6/lib/libICE.so.6 (0x40196000)
+        libXmu.so.6 => /usr/X11R6/lib/libXmu.so.6 (0x401ac000)
+        libXext.so.6 => /usr/X11R6/lib/libXext.so.6 (0x401c0000)
+        libXi.so.6 => /usr/X11R6/lib/libXi.so.6 (0x401cd000)
+        libX11.so.6 => /usr/X11R6/lib/libX11.so.6 (0x401d6000)
+        libGLcore.so.1 => /usr/lib/libGLcore.so.1 (0x402ab000)
+        libm.so.6 => /lib/libm.so.6 (0x4048d000)
+        libdl.so.2 => /lib/libdl.so.2 (0x404a9000)
+        /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x40000000)
+        libXt.so.6 => /usr/X11R6/lib/libXt.so.6 (0x404ac000)
+
+Bitte richten Sie Ihr Augenmerk auf die Dateien libGL und libGLcore --
+falls diese nicht diejenigen sind, die von den NVIDIA installiert
+wurden, so müssen Sie sie entfernen, umbenennen oder Ihren ld Suchpfad
+anpassen. Falls Sie mit diesen Ausführungen nichts anfangen können, ist
+es empfehlenswert, die Handbuchseiten für "ldconfig" und "ldd" zu lesen.
+
+
+__________________________________________________________________________
+
+(anh-d)  ANHANG D: XF86CONFIG OPTIONEN
+__________________________________________________________________________
+
+Folgende Optionen werden vom NVIDIA XFree86 Treiber unterstützt:
+
+    Option "NvAGP" "integer"
+        AGP Support konfigurieren. Gültige Integer Argumente:
+
+        0 : AGP deaktivieren
+        1 : NVIDIAs internen AGP Support benutzen, falls möglich
+        2 : AGPGART benutzen, falls möglich
+        3 : beliebigen AGP Support benutzen (AGPGART, dann NVIDIAs AGP)
+
+        Bitte beachten Sie, dass NVIDIAs interner AGP Support nicht
+        benutzt werden kann, wenn AGPGART statisch in Ihren Kernel
+        kompiliert wurde oder als Modul erstellt aber in Ihren Kernel
+        geladen wurde (einige Distributionen laden AGPART beim Booten
+        in den Kernel).
+
+        Standard: 3 (der Standard war 1 bis nach 1.0-1251)
+
+
+    Option "NoLogo" "boolean"
+        Zeichnen des NVIDIA Logos auf der Splashseite beim Starten von
+        X deaktivieren. 
+
+        Standard: das Logo wird dargestellt.
+
+
+    Option "NoRenderAccel" "boolean"
+        Aktivieren oder Deaktivieren der Hardwarebeschleunigung der 
+        RENDER Erweiterung. 
+
+        Standard: RENDER wird, wenn möglich, beschleunigt
+
+
+    Option "NoRenderExtension" "boolean"
+        Diese Option erlaubt es, die RENDER Erweiterung vollständig zu
+        deaktivieren. Dies ist normalerweise nur durch ein erneutes
+        Übersetzen des X Servers möglich. Glücklicherweise ist es aber
+        möglich diese Einstellung auch von Treibern möglich, was auch
+        der Grund ist, warum diese Option hier angeboten wird. Das ist
+        mit Farbtiefe 8 sinnvoll, wo RENDER ansonsten den Grossteil der
+        Standard Farbtabelle in Anspruch nimmt.
+
+        Standard: RENDER wird, wenn möglich, bereitgestellt
+
+
+    Option "UBB" "boolean"
+        Einheitlichen Back Buffer auf Quadro Chipsätzen aktivieren oder
+        deaktivieren; eine Beschreibung des UBB finden Sie in Anhang M.
+        Diese Option hat keine Auswirkungen auf nicht Quadro Chipsätze.
+        Standard: UBB ist für Quadro Chipsätze auf ‚ein' gesetzt
+
+
+    Option "WindowFlip" "boolean"
+        Window Flipping bei aktiviertem UBB aktivieren oder deaktivieren;
+        eine Beschreibung finden Sie in Anhang M. Diese Option hat bei
+        deaktiviertem UBB keine Auswirkungen. Diese Einstellung kann die
+        Leistung von OpenGL Anwendungen erhöhen.
+
+        Standard: Window Flipping ist auch mit aktiviertem UBB inaktiv.
+
+
+    Option "PageFlip" "boolean"
+        Page Flipping aktivieren oder deaktivieren; eine Beschreibung
+        finden Sie in Anhang M. 
+
+        Standard: Page Flipping ist aktiviert.
+
+
+    Option "DigitalVibrance" "integer"
+        Aktiviert Digital Vibrance Control. Es gibt 4 Optionen:
+        3, 2, 1 and off (0).  Diese Function wird nur auf GeForce2
+        MX (und 200/400), GeForce2 Go, Quadro2 MXR/EX, Quadro2 Go,
+        GeForce3 and Ti Varianten, Quadro DDC, alle GeForce4 und
+        Quadro4 Varianten.
+
+        Standard: off (deaktiviert)
+
+                
+    Option "Overlay" "boolean"
+        Aktiviert RGB Workstation Overlay Visuals. Diese Funktion
+        wird nur auf Quadro4 Chips (ausser Quadro4 200/400NVS) in
+        der Farbtiefe 24. Diese Option weist den X Server dazu an
+        die SERVER_OVERLAY_VISUALS Root Fenster Eigenschaften zu
+        exportieren und GLX bietet single und double buffered, Z
+        buffered 16bit Overlay Visuals an. 
+        Der Transparenzschlüssel ist Pixel 0x0000. Es gibt keine
+        Gammakorrektur Unterstützung für die Overlay Ebene. Diese
+        Funktion benötigt XFree86 Version 4.1.0 oder besser und
+        wird nicht im TwinView Modus unterstützt. Overlay kann nur
+        mit virtuellen Desktops kleiner oder gleich 2046x2047
+        benutzt werden (es funktioniert z.B. nicht mit 2048x1536).
+
+        Standard: off (deaktiviert)
+
+
+    Option "SWCursor" "boolean"
+        Software Rendering des X-Cursors aktivieren oder deaktivieren.
+
+        Standard: off (aus).
+
+
+    Option "HWCursor" "boolean"
+        Hardware Rendering des X-Cursors aktivieren oder deaktivieren.
+
+        Standard: on (ein).
+
+
+    Option "CursorShadow" "boolean"
+        Die Verwendung eines Schattens mit dem Hardware-beschleunigten
+        Cursor aktivieren oder deaktivieren. Hiermit ist ein schwarzes,
+        durchsichtiges Abbild der Cursorform gemeint, das in einem
+        gegebenen Abstand zum echten Cursor steht. Diese Option ist für
+        Hardware beginnend beim GeForce 2 MX oder höher verfügbar
+        (d.h. sämtliche Hardware ausser TNT/TNT2, GeForce 256, GeForce
+        DDR und Quadro)
+
+        Standard: kein Cursorschatten.
+
+
+    Option "CursorShadowAlpha" "integer"
+        Der für den Cursorschatten zu verwendende Alphawert. Dies ist nur
+        bei aktiviertem CursorShadow einsetzbar. Der Wert muss zwischen
+        [0, 255] liegen - 0 ist vollständig durchsichtig; 255 vollständig
+        opak.
+
+        Standard: 64.
+
+
+    Option "CursorShadowXOffset" "integer"
+        Der Abstand in Pixeln, um den das Schattenbild nach rechts von
+        der echten Cursorabbildung versetzt wird. Diese Option ist nur
+        bei aktiviertem CursorShadow anwendbar. Der Wert muss im Bereich
+        zwischen [0, 32] liegen.
+
+        Standard: 4.
+
+
+    Option "CursorShadowYOffset" "integer"
+        Der Abstand in Pixeln, um den das Schattenbild nach unten von der
+        echten Cursorabbildung versetzt wird. Diese Option ist nur bei
+        aktiviertem CursorShadow anwendbar. Der Wert muss im Bereich
+        zwischen [0, 32] liegen. 
+
+        Standard: 2.
+
+    
+    Option "ConnectedMonitor" "string"
+        Ermöglicht das überbrücken der automatisch durch das NVIDIA Modul
+        erkannten, mit der Videokarte verbundenen Geräte. Das kann zum
+        Beispiel hilfreich sein, wenn ein KVM (Keyboard, Video, Mouse) im
+        Einsatz ist und die Peripheriegeräte nicht mit Ihrem System
+        verbunden sind, wenn Sie X starten. In einem solchem Fall kann
+        der NVIDIA Treiber die Art der Peripheriegeräte nicht erkennen
+        und geht davon aus, dass Sie einen einzelnen CRT Monitor nutzen.
+        Falls Sie jedoch einen digitalen Flatpanel Monitor anstelle eines
+        analogen Monitors benutzen, können Sie den NVIDIA X Treiber mit
+        dieser Option explizit darüber informieren. Gültige Werte sind:
+
+        "CRT" (Kathodenstrahlröhre)
+        "DFP" (Flatpanel Monitor)
+        "TV"  (Fernsehgerät)
+
+        Falls Sie TwinView benutzen, erlaubt diese Option eine mit
+        Kommata getrennte Auflistung von Anzeigegeräten, z.B.:
+
+        "CRT, CRT" oder "CRT, DFP"
+
+        Standard: NULL
+
+
+
+    Option "UseEdidFreqs" "boolean"
+        Ist diese Option gesetzt, benutzt die HorizSync und VertRefresh
+        Werte, die in der EDID des Anzeigegeräts enkodiert sind. Die in
+        der EDID gegebenen Werte übergehen die in der "Section Monitor"
+        gesetzten Werte für HorizSync und VertRefresh. Werden vom
+        Anzeigegerät keine EDID bereitgestellt oder geben diese keine
+        hsync oder vrefresh Bereiche an, so benutzt X als Standard die
+        HorizSync und VertRefresh Bereich aus der Monitorsektion.
+
+
+    Option "IgnoreEDID" "boolean"
+        Diese Option weist den X Server dazu an, keine EDID Daten vom
+        Monitor anzufordern. Angeforderte Videomodi werden normalerweise
+        mit Werten aus den EDID Informationen des Monitors verglichen.
+        Einige Monitore geben falsche Informationen über ihre eigenen
+        Fähigkeiten zurück. Es kann deshalb hilfreich sein, EDID Daten
+        des Monitors zu ignorieren um Videomodi zu validieren. Auf der
+        anderen Seite kann das aber auch gefährlich sein, wenn Sie nicht
+        genau wissen, was Sie tun.
+
+        Standard: EDID Informationen beachten
+
+
+    Option "NoDDC" "boolean"
+        Synonym für "IgnoreEDID"
+
+
+    Option "FlatPanelScalingMode" "string"
+        Fordert einen spezifischen Skalierungsmodus für Flachbildschirme
+        in Form einer mit Kommata getrennten Liste von Eigenschaft:Wert
+        Paaren an:
+
+        Gültige Werte für "Scaling":
+
+            "default"           benutzt den aktuellen Modus
+
+            "native"            benutzt den Skalierungsmechanismus
+                                des Flachbildschirms, falls möglich
+
+            "scaled"            benutzt NVIDIAs Skalierungsmechanismus
+
+            "centered"          versucht das Bild zu zentrieren
+
+            "aspect-scaled"     benutzt NVIDIAs Skalierungsmechanismus
+                                bewahrt aber die Aspektrate
+
+        Gültige Werte für "Dithering":
+
+            "default"           kein Dithering
+
+            "enabled"           Dithering wenn möglich
+
+            "disabled"          kein Dithering
+
+        Beispiel:
+
+            "Scaling = centered, Dithering = enabled"
+
+
+    Option "UseInt10Module" "boolean"
+        Weist den X Server dazu an, das XFree86 Int10 Modul zum Warmstart
+        aller Sekundärkarten zu benutzen, anstatt das NVdriver Modul zum
+        POSTen der Karten zu benutzen.
+
+        Standard: POSTen durch das NVdriver Kernelmodul
+
+
+    Option "TwinView" "boolean"
+        TwinView aktivieren oder deaktivieren. Mehr Informationen finden
+        Sie in ANHANG I.
+
+         Standard: TwinView ist deaktiviert.
+
+
+    Option "TwinViewOrientation" "string"
+        Kontrolliert die Beziehung zwischen den beiden Bildschirmgeräten
+        beim Einsatz von TwinView. Verwendet einen der folgenden Werte:
+
+            "RightOf"   rechts von dem ersten Bildschirm
+            "LeftOf"    links  von dem ersten Bildschirm 
+            "Above"     über       dem ersten Bildschirm
+            "Below"     unter      dem ersten Bildschirm
+            "Clone"     Klonen des ersten Bildschirms
+
+        Mehr Informationen zu TwinVide finden Sie in ANHANG I.
+
+        Standard: NULL
+
+
+    Option "SecondMonitorHorizSync" "range(s)"
+        Diese Option entspricht dem Eintrag HorizSync in der Monitor
+        Sektion (Section Monitor), bezieht sich jedoch mit TwinView
+        auf den zweiten Bildschirm . Details finden Sie in ANHANG I.
+
+
+    Option "SecondMonitorVertRefresh" "range(s)"
+        Diese Option entspricht dem Eintrag VertSync in der Monitor
+        Sektion (Section Monitor), bezieht sich jedoch mit TwinView
+        auf den zweiten Bildschirm . Details finden Sie in ANHANG I.
+
+
+    Option "MetaModes" "string"
+        Diese Option beschreibt die Moduskombination, die bei Einsatz
+        von TwinView auf jedem Bildschirm eingesetzt werden soll.
+        Details finden Sie in ANHANG I.
+
+
+    Option "NoTwinViewXineramaInfo" "boolean"
+        Im TwinView Betriebsmodus stellt der NVIDIA X Treiber eine X
+        Xinerama Erweiterung berait, die es X Clients, wie z.B. Window
+        Managern, ermöglicht mit XineramaQueryScreens() die aktuelle
+        TwinView Konfiguration in Erfahrung zu bringen. Das verwirrt
+        leider einige Window Manager und kann daher mit dieser Option 
+        abgeschaltet werden.
+
+
+    Option "UseClipIDs" "boolean"
+        Mit dieser Option kann Unterstützung für Hardware Clip ID
+        Buffer aktiviert werden, um die Render Leistung mit vielen
+        Clips zu verbessern. Das wird nur mit Quadro4 Chips im UBB
+        Betriebsmodus unterstützt. Durch die Aktivierung wird ein
+        kleiner Teil des Videospeichers reserviert, üblicherweise
+        nicht mehr als zwei MB.
+
+        Standard: Clip IDs werden nicht benutzt.
+
+
+    Option "Stereo" "integer"
+        Diese Option stellt quad-buffered Stereo Visuals auf Quadro
+        Karten zur Verfügung. Der Parameter bestimmt die Art der
+        verwendeten Stereo Brille:
+
+        1 - DDC Brillen. Das Sync Signal wird durch das DDC Signal
+            des Monitors and die Brille gesandt. Diese Vorrichtung
+            setzt in der Regel ein Zwischenkabel zwischen Monitor
+            und Grafikkarte voraus.
+
+        2 - "BlueLine" Brillen. Auch diese Brillen benutzen in der
+            Regel ein Zwischenkabel zwischen Monitor und Karte. Die
+            Brille weis, welches Auge angesteuert wird durch die
+            Länge einer sichtbaren, blauen Linie an dem unteren Ende
+            des Bildschirms. In diesem Modus ist das Root Fenster in
+            der vertikalen um einen Pixel kürzer als die geforderte
+            Höhe und funktioniert nicht mit virtuellen Root Fenster
+            Grössen, die den sichtbaren Bereich überschreiten.
+
+        3 - Onboard Stereo Unterstützung. Diese Einrichtung ist nur
+            auf professionellen Karten zu finden. Die Stereobrille
+            werden mit einem DIN Steckverbinder in der Rückblende
+            der Karte angeschlossen.
+
+
+        Stereo wird nur mit Quadro Karten bereitgestellt und wird
+        nicht im TwinView Modus unterstützt. Derzeit kann es mit
+        Probleme im Betrieb mit ursprünglichen, NV10 Quadro Chips
+        geben. Wir versuchen diese in einer zukünfigen Version der
+        Treiber zu beheben.
+
+        Standard: keine Stereo Unterstützung.
+
+
+__________________________________________________________________________
+
+(anh-e)  ANHANG E: DIE OPENGL UMGEBUNGSVARIABLE (EINSTELLUNGEN)
+__________________________________________________________________________
+
+FULL SCENE ANTIALIASING
+
+Antialiasing ist eine Technik, die eingesetzt wird, um die Kanten von
+Objekten zu glätten und den ausgerissenen "Treppenstufen" Effekt, der
+manchmal auftritt, zu reduzieren. Full Scene Antialiasing wird auf
+GeForce und neuerer Hardware unterstützt.
+
+Durch das Setzen der entsprechenden Umgebungsvariable können Sie auf
+jeder dieser GPUs in jeder beliebigen OpenGL Applikation Full Scene
+Antialiasing aktivieren.
+
+Es sind verschiedene Antialiasing Methoden verfügbar; Sie können diese
+durch das Setzen von __GL_FSAA_MODE Umgebungsvariable auswählen.
+Bitte beachten Sie, dass ein Erhöhen der Samplezahl während des FSAA
+Rendering die Leistung verringern kann.
+
+Folgende Tabellen beschreiben die möglichen Werte für __GL_FSAA_MODE
+und ihre Auswirkungen auf die verschiedenen NVIDIA GPUs.
+
+
+__GL_FSAA_MODE  GeForce, GeForce2, Quadro, Quadro2 Pro
+-----------------------------------------------------------------------
+  0             FSAA disabled
+  1             FSAA disabled
+  2             FSAA disabled
+  3             1.5 x 1.5 Supersampling
+  4             2 x 2 Supersampling
+  5             FSAA disabled
+
+
+__GL_FSAA_MODE  GeForce4 MX, Quadro4 500/550 XGL, Quadro4 200/400 NVS
+-----------------------------------------------------------------------
+  0             FSAA disabled
+  1             2x Bilinear Multisampling
+  2             2x Quincunx Multisampling
+  3             FSAA disabled
+  4             2 x 2 Supersampling
+  5             FSAA disabled
+
+
+__GL_FSAA_MODE  GeForce3, Quadro DDC, GeForce4 Ti, Quadro4 700 XGL,
+                Quadro4 750 XGL, Quadro4 900 XGL
+-----------------------------------------------------------------------
+  0             FSAA disabled
+  1             2x Bilinear Multisampling
+  2             2x Quincunx Multisampling
+  3             FSAA disabled
+  4             4 x 4 Bilinear Multisampling
+  5             4 x 4 Guassian Multisampling
+
+Bitte beachten sie, dass sie mit Quadro Karten zunächst sicherstellen
+müssen, dass sie nicht UBB verwenden, bevor sie FSAA benutzen können.
+
+
+ANISOTROPIC TEXTURE FILTERING
+
+Automatisches anisotropes Filtern kann durch das Setzen der Variable
+__GL_DEFAULT_LOG_ANISO aktiviert werden. Hilfreiche Werte sind:
+
+
+__GL_DEFAULT_LOG_ANISO  GeForce/GeForce2/GeForce4 MX Description
+-----------------------------------------------------------------------
+  0     No anisotropic filtering
+  1     Enable automatic anisotropic filtering
+
+__GL_DEFAULT_LOG_ANISO  GeForce3/GeForce4 Ti Description
+-----------------------------------------------------------------------
+  0     No anisotropic filtering
+  1     Low anisotropic filtering
+  2     Medium anisotropic filtering
+  3     Maximum anisotropic filtering
+
+
+VBLANK SYNCING
+
+Das Setzen der Umgebungsvariable __GL_SYNC_TO_VBLANK ungleich null wird
+glXSwapBuffers dazu zwingen, sich mit der vertikalen Bildwiederholrate
+Ihres Bildschirms zu synchronisieren. Das funktioniert auf GeForce oder
+neuerer Hardware zu synchronisieren (auf allen Produkten außer TNT/TNT2).
+
+
+__________________________________________________________________________
+
+(anh-f)  ANHANG F: AGP KONFIGURATION
+__________________________________________________________________________
+
+Das NVdriver Kernelmodul kann zur AGP Konfiguration auf mehrere Treiber
+zurückgreifen: auf NVIDIAs AGP Modul (NVAGP) und auf das Linux Kernel
+AGP Modul (AGPGART). Kontrolliert wird die Wahl des AGP Treibers mit der
+"NvAGP" Option in XF86Config:
+
+        Option "NvAgp" "0" ... deaktiviert AGP Support
+        Option "NvAgp" "1" ... wenn möglich, NVAGP verwenden
+        Option "NvAgp" "2" ... wenn möglich, AGPART verwenden
+        Option "NvAGP" "3" ... versuche AGPGART, danach NVAGP
+
+Der Standard ist 3 (der Standard war 1 bis nach 1.0-1251).
+
+Sie sollten dasjenige AGP Modul verwenden, dass am besten mit Ihrem AGP
+Chipsatz zusammenarbeitet. Falls Sie Stabilitätsprobleme haben, sollten
+Sie AGP deaktivieren und prüfen, ob das die Probleme behebt und dann
+gegebenenfalls mit einem anderen AGP Modul experimentieren.
+
+Sie können den aktuellen AGP Status jederzeit mit dem /proc Interface in
+Erfahrung bringen (siehe ANHANG O: DAS PROC INTERFACE).
+
+Um das AGPGART Modul verwenden zu können, müssen Sie es mit Ihrem Kernel
+kompilieren: entweder statisch gelinkt oder als Kernelmodul. Die NVIDIA
+AGP Unterstützung kann nicht verwendet werden, wenn AGPGART statisch in
+den Kernel gelinkt oder in den Kernel geladen wurde. Es wird empfohlen,
+dass Sie AGPGART als Kernelmodul kompilieren und sicherstellen, dass es
+nicht geladen wird, wenn Sie NVIDIAs AGP Modul benutzen.
+
+Bitte beachten Sie, dass ein Wechseln des AGP Moduls einen Neustart des
+Systems erfordert, bevor die Änderungen tatsächlich wirksam werden.
+
+Die folgenden AGP Chipsätze werden von NVIDIAs AGP unterstützt; für alle
+anderen Chipsätze empfehlen wir die Verwendung des AGPART Moduls.
+
+  o Intel 440LX
+  o Intel 440BX
+  o Intel 440GX
+  o Intel 815 ("Solano")
+  o Intel 820 ("Camino")
+  o Intel 830
+  o Intel 840 ("Carmel")
+  o Intel 845 ("Brookdale")
+  o Intel 845G
+  o Intel 850 ("Tehama")
+  o Intel 860 ("Colusa")
+  o AMD 751 ("Irongate")
+  o AMD 761 ("IGD4")
+  o AMD 762 ("IGD4 MP")
+  o VIA 8371
+  o VIA 82C694X
+  o VIA KT133
+  o VIA KT266
+  o RCC 6585HE
+  o Micron SAMDDR ("Samurai")
+  o Micron SCIDDR ("Scimitar")
+  o nForce AGP
+  o ALi 1621
+  o ALi 1631
+  o ALi 1647
+  o ALi 1651
+  o ALi 1671
+  o SiS 630
+  o SiS 633
+  o SiS 635
+  o SiS 645
+  o SiS 730
+  o SiS 733
+  o SiS 735
+  o SiS 745
+
+
+Falls Sie Stabilitätsprobleme bei der Verwendung des AGP Ports haben,
+sollten Sie folgendes wissen:
+
+  o Unterstützung für die Page Size Extension auf Athlon Prozessoren
+
+    Einige Linux Kernel haben einen Cache-Koherenz Fehler, der durch
+    erweiterte spekulative Caching Fähigkeiten neuerer AMD Athlon
+    Prozessoren (AMD Athlon XP, AMD Athlon 4, AMD Athlon MP und Duron
+    Prozessoren beginnend mit Modell 6) in Erscheinung tritt. Dieser
+    Fehler tritt in der Regel bei anspruchsvoller 3D Grafik, und bei
+    Verwendung von AGP Grafikkarten auf.
+
+    Linux Distributionen basierend auf 2.4.19 und neuer sollten (!)
+    diesen Fehler nicht mehr haben. Ältere Kernel benötigen jedoch die
+    Hilfe des Benutzers um sicherzustellen, dass ein bestimmter Teil
+    der spekulativen Caching Fähigkeiten der betroffenen Prozessoren
+    und die PSE (4MB Speicherseiten) des Prozessors abgeschaltet wird.
+
+    Dieses kann durch ein Kernel Patch geschehen:
+    ftp://ftp.suse.com/pub/people/ak/v2.4/
+
+    Der NVIDIA Treiber stellt automatisch sicher, dass die genannten
+    erweiterten Caching Fähigkeiten eingeschränkt werden, ohne dass
+    der Kernel zu diesem Zweck gepatcht werden muss; das funktioniert
+    auch mit solchen Kerneln, die bereits angepasst wurden.
+
+    Bei älteren Kerneln muss ohne das genannte Kernel Patch zusätzlich
+    die Unterstützung für 4MB Speicherseiten durch den Benutzer beim
+    Boot deaktiviert werden, um den Fehler vollständig zu umgehen. Das
+    kann durch Angabe der folgenden Anweisung in der Boot Befehlszeile
+    geschehen:
+
+      mem=nopentium
+
+    Oder durch Ergänzen der "append" Zeile in /etc/lilo.conf:
+
+      append = "mem=nopentium"
+
+  o AGP Drive Strength BIOS Einstellung (Via basierte Mainboards)
+
+    Viele Via basierte Mainboards erlauben es, die AGP Drive Strength
+    Einstellung im System BIOS anzupassen. Diese Einstellung hat sehr
+    grossen Einfluss auf die Systemstabilität; der Bereich zwischen
+    den Werten 0xEA und 0xEE scheint mit NVIDIA Hardware am besten zu
+    funktionieren. Das Setzen eines der beiden Nibble auf 0xF führt
+    normalerweise zu gravierenden Stabilitätsproblemen.
+
+    Falls Sie sich dazu entscheiden sollten, mit dieser Einstellung
+    zu experimentieren, so sollten Sie sich darüber im Klaren sein,
+    dass Sie dieses auf Ihr eigenes Risiko hin tun, und dass sie ihr
+    System mit ungünstigen Werten boot-unfähig machen können bis sie
+    die Einstellung wieder auf einen funktionierenden Wert setzen.
+    (entweder mit einer PCI Grafikkarte oder durch Zurücksetzen des
+    BIOS auf seine Standardwerte)
+
+  o System BIOS Version
+
+    Stellen Sie sicher, dass sie die neueste BIOS Version für Ihr
+    Mainboard vom Hersteller bezogen und installiert haben.
+
+  o AGP Rate/Geschwindigkeit
+
+    Möglicherweise hilft das Herabsetzen der AGP Geschwindigkeit bei
+    der Behebung von Stabilitätsproblemen. Sie können dies mit dem
+    NVreg_ReqAGPRate NVdriver Modulparameter tun:
+
+    Falls Sie das Modul manuell laden:
+
+      insmod NVdriver NVreg_ReqAGPRate=2   # force AGP Rate to 2x
+      insmod NVdriver NVreg_ReqAGPRate=1   # force AGP Rate to 1x
+
+    Falls Sie modprobe benutzen (/etc/modules.conf):
+
+      alias char-major-195
+      options NVdriver NVreg_ReqAGPRate=2  # force AGP Rate to 2x
+      options NVdriver NVreg_ReqAGPRate=1  # force AGP Rate to 1x
+
+
+Auf Athlon Motherbords mit dem VIA KX133 oder 694X Chipsatz, wie dem
+ASUS K7V Motherbord, erzwingt der NVIDIA Treiber den AGP 2x Modus als
+Standard, um die unzureichende Signalstärke zu umgehen. Sie können AGP
+4x erzwingen, indem Sie NVreg_EnableVia4x in os-registry.c aktivieren
+und das NVIDIA Kernelmodul neu kompilieren. Bitte beachten Sie, dass
+der Treiber dadurch instabil werden kann.
+
+Auf ALi1541 und ALi1647 Chipsätzen deaktivieren die NVIDIA Treiber AGP,
+um Timing- und Signalintegritätsprobleme zu umgehen. Sie können AGP
+erzwingen, indem Sie NVreg_EnableALiAGP in os-registry.c aktivieren und
+das NVIDIA Kernelmodul neu kompilieren. Bitte beachten Sie, dass der
+Treiber dadurch instabil werden kann.
+
+
+__________________________________________________________________________
+
+(anh-g)  ANHANG G: ALI SPEZIFISCHE PROBLEME
+__________________________________________________________________________
+
+Die folgenden Tipps können dabei helfen, die Systemstabilität auf
+problematischen ALi Systemen zu verbessern:
+
+  o TURBO AGP MODE im BIOS deaktivieren.
+ 
+  o Auf P5A Mainboards Aufrüsten des BIOS auf Revision 1002 BETA 2.
+ 
+  o Bei Verwendung von 1007, 1007A oder 1009 Anpassen der IO Recovery
+    Time auf 4 cycles.
+
+  o AGP ist standardmässig auf einigen ALi-Chipsätzen deaktiviert
+    (ALi1541, ALi1647), um schwerwiegende Systemstabilitätsprobleme
+    mit diesen Chipsätzen zu vermeiden. Bitte beachten Sie die
+    Kommentare in Bezug auf NVreg_EnableALiAGP in os-registry.c, um
+    AGP trotzdem zu benutzen.
+
+
+__________________________________________________________________________
+
+(anh-h)  ANHANG H: TNT SPEZIFISCHE PROBLEME
+__________________________________________________________________________
+
+Dis meisten bekannten Problem mit SGRAM/SDRAM basierten TNT Karten
+sollten behoben sein. Es besteht jedoch noch die unwahrscheinliche
+Möglichkeit, dass auf Ihrer Grafikkarte ein falsches BIOS installiert
+ist, und dieser Treiber weiterhin nicht korrekt funtkioniert.
+
+Versagt der Treiber bei Ihnen, schlagen wir die folgende Vorgehensweise
+vor:
+
+  o Beobachten Sie Ihren Monitor beim Systemstart. Der allererste, kurz
+    erscheinende Bildschirm zeigt den Typ des verwendeten Video RAMs an,
+    das ist entweder SGRAM oder SDRAM.
+
+  o laden Sie das aktuelle NVIDIA_kernel TAR Archiv herunter
+
+  o Editieren Sie die Datei "os-registry.c", Bestandteil der Kernel
+    Modul Quellen. Suchen Sie nach der Variable:
+
+        "NVreg_VideoMemoryTypeOverride"
+
+    Setzen Sie den Wert der Variablen auf die Speicherart, die Ihre
+    Karte verwendet (numerisch, siehe die Zeile direkt oberhalb).
+
+  o Da wir normalerweise diese Variable nicht verwenden, ändern Sie
+    bitte das "#if 0", das sich ungefähr 10 Zeilen oberhalb der Variable
+    befindet, in "#if 1".
+
+  o Kompilieren und installieren Sie den neuen Treiber ("make")
+
+
+__________________________________________________________________________
+
+(anh-i)  ANHANG I: TWINVIEW KONFIGURATION
+__________________________________________________________________________
+
+Das Leistungsmerkmal TwinView wird nur von NVIDIA GPUs unterstützt, die
+über Dual-Display Funktionalität verfügen, wie der GeForce2 MX, GeForce2
+Go, Quadro2 MXR, Quadro2 Go und sämtliche GeForce4 GPUs. Bitte setzen Sie
+sich mit dem Vertrieb Ihrer Videokarte in Verbindung, um sicherzustellen,
+dass TwinView auf Ihrer Karte unterstützt wird.
+
+TwinView ist ein Operationsmodus, in dem zwei Bildschirmgeräte (digitale
+Flachbildschirme, CRTs und Fernseher) die Inhalte eines einzelnen X
+Screens in jeder beliebigen Konfiguration darstellen können. Diese Art
+der Verwendung mehrerer Monitore hat grosse Vorteile  gegenüber anderen
+Techniken (wie z.B. Xinerama):
+
+  o Es wird ein einzelner X Screen verwendet. Der NVIDIA Treiber hält
+    alle Informationen über mehrere Bildschirmgeräte vom X Server fern;
+    was X betrifft, gibt es nur einen Screen.
+
+  o Beide Bildschirmgeräte teilen sich einen Frame Buffer. Damit ist die
+    gesamte Funktionalität, die auf einem einzelnen Bildschirm vorhanden
+    ist, (z.B. beschleunigtes OpenGL) auch in TwinView erhältlich.
+
+  o Es ist kein zusätzlicher Aufwand erforderlich, um das Vorhandenseins
+    eines einzelnen Desktops zu emulieren.
+
+
+XF86CONFIG TWINVIEW-OPTIONEN
+
+Um TwinView zu aktivieren, müssen Sie die folgenden Optionen in der
+Bildschirmsektion (Section Screen) Ihrer XF86Config Datei angeben:
+
+Option "TwinView"
+Option "SecondMonitorHorizSync"     "<hsync range(s)>"
+Option "SecondMonitorVertRefresh"   "<vrefresh range(s)>"
+Option "MetaModes"                  "<list of metamodes>"
+
+Sie können auch eine der folgenden Optionen verwenden, obwohl diese
+nicht erforderlich sind:
+
+Option "TwinViewOrientation"        "<relationship of head 1 to head 0>"
+Option "ConnectedMonitor"           "<list of connected display devices>"
+
+Bitte lesen Sie die detaillierten Beschreibungen zu den Optionen:
+
+  o TwinView
+        Diese Option ist für die Aktivierung von TwinView erforderlich;
+        ohne diese Option werden alle anderen mit TwinView in Beziehung
+        stehenden Optionen ignoriert.
+
+  o SecondMonitorHorizSync, SecondMonitorVertRefresh
+        Mit diesen Optionen werden die Leistungsgrenzen des zweiten
+        Monitors spezifiziert. Die gegebenen Werte sollten der gleichen
+        Konvention wie die "HorizSync" und "VertRefresh" Einträge in
+        der Bildschirmsektion folgen.
+
+        Wie in der Handbuchseite von XF86Config erklärt: die Bereiche
+        können eine durch ein Kommata getrennte Liste verschiedener Werte
+        und/oder Wertebereiche sein, in denen ein Bereich durch zwei
+        unterschiedliche Werte, getrennt durch einen Bindestich gegeben
+        ist. Die HorizSync ist in Hz angegeben und die VertRefresh ist in
+        Hz angegeben. Wenn Sie den EDIDs Ihrer Bildschirmgeräte trauen,
+        können Sie die Option "UseEdidFreqs" anstelle dieser Optionen
+        verwenden (eine Beschreibung der Option "UseEdidFreqs" finden Sie
+        in ANHANG D.)
+
+  o MetaModes
+        Ein einzelner MetaMode beschreibt, welcher Modus auf welchem
+        Anzeigegerät zu einer gegebenen Zeit verwendet werden soll.
+        Mehrere MetaModi führen die Kombination der Modi und die Sequenz
+        auf, in der diese eingesetzt werden sollen. Wenn der NVIDIA
+        Treiber X darüber informiert, welche Modi verfügbar sind, werden
+        nur die unbedingt nötigen MetaMode Daten an X übergeben, während
+        der Modus "per display device" (pro Bildschirmgerät) intern im
+        NVIDIA Treiber verbleibt. In der MetaMode Syntax werden Modi
+        innerhalb eines MetaModus durch ein Komma getrennt und mehrere
+        MetaModi durch ein Semikolon. Zum Beispiel:
+
+          "<mode name 0>, <mode name 1>; <mode name 2>, <mode name 3>"
+
+        <mode name 0> ist der Name des Modus, der auf Anzeigegerät 0
+        verwendet wird - gleichzeitig mit <mode name 1> auf Gerät 1.
+        Ein Modewechsel veranlasst dann, dass <mode name 2> auf Gerät
+        0 und <mode name 3> auf Gerät 1 verwendet wird. Nachfolgend
+        finden Sie einen realen MetaMode Eintrag aus der XF86Config
+        Sample Config Datei:
+
+          Option "MetaModes" "1280x1024,1280x1024; 1024x768,1024x768"
+
+        Wenn Sie nicht möchten, dass ein Bildschirmgerät für einen
+        bestimmten MetaMode aktiv ist, können Sie den Modusnamen "Null"
+        verwenden oder den Modusnamen ganz auslassen:
+
+          "1600x1200, NULL; NULL, 1024x768"
+
+        oder
+
+          "1600x1200; , 1024x768"
+
+        Optional können zusätzlich zu den Modenamen Offsetinformationen
+        angegeben werden, die die Position des Anzeigegeräte innerhalb
+        des virtuellen Anzeigeraums festlegen; z.B.:
+
+          "1600x1200 +0+0, 1024x768 +1600+0; ..."
+
+        Offsetbeschreibungen folgen den Konventionen, die in der X
+        "-geometry" Befehlszeilenoption verwendet werden; d.h. sowohl
+        positive als auch negative Offsets sind gültig; obwohl negative
+        Offsets nur erlaubt werden, wenn eine virtuelle Bildschirmgröße
+        explizit in der XF86Config Datei angegeben ist.
+
+        Sind für den MetaMode keine Offsets vorgegeben, werden diese
+        entsprechend dem Wert der TwinViewOrientation Option berechnet.
+        Bitte beachten Sie, dass sobald die Offsets für einen beliebigen
+        Modus in einem einzelnen MetaModus gegeben sind, Offsets für
+        alle Modi innerhalb dieses einzelnen MetaMode erwartet werden;
+        in einem solchen Fall wird angenommen, dass die Offsets +0+0
+        entsprechen, wenn sie nicht vorgegeben sind.
+
+        Dort, wo sie nicht explizit vorgegeben ist, wird die virtuelle
+        Bildschirmgröße als das Begrenzungsrechteck aller MetaMode 
+        Begrenzungsrechtecke berechnet. Es werden keine MetaModi mit
+        einem Begrenzungsrechteck, das größer ist, als eine explizit
+        vorgegebene virtuelle Bildschirmgröße verwendet.
+
+        Ein MetaMode kann mit einer "Panning Domain" Angabe weiter
+        modifiziert werden, z.B.:
+
+          "1024x768 @1600x1200, 800x600 @1600x1200"
+
+        Eine Panning Domain ist der Bereich, in welchem der Viewport des
+        Bildschirms verschoben wird, um der Maus zu folgen. Mit TwinView
+        erfolgt das Panning auf zwei Ebenen: Zunächst wird der Viewport
+        eines individuellen Bildschirmgerätes in die entsprechende
+        Panning Domain verschoben und zwar so lange, wie der Viewport im
+        Begrenzungsrechteck des MetaMode enthalten ist. Sobald die Maus
+        das Begrenzungsrechteck des MetaMode verlässt, wird der gesamte
+        MetaMode (d.h. alle Bildschirmgeräte) verschoben, um der Maus
+        innerhalb des virtuellen Bildschirms zu folgen.
+
+        Bitte beachten Sie, dass die individuellen Panning Domains der
+        Bildschirmgeräte als Standard an die Position der Viewports der
+        Bildschirmgeräte gebunden sind, obwohl das Standardverhalten
+        darin liegt, dass die Viewports miteinander "verbunden" bleiben
+        und nur die zweite Art des Panning ausführen.
+
+        Panning Domains können sicherlich am besten genutzt werden, wenn
+        tote Bereiche, Bereiche des virtuellen Bildschirms, die aufgrund
+        von Bildschirmgeräten mit unterschiedlichen Auflösungen nicht
+        genutzt werden können, eliminiert werden sollen. Zum Beispiel:
+
+          "1600x1200, 1024x768"
+
+        erzeugt einen Bereich unterhalb des 1024x768 Displays, auf den
+        nicht zugegriffen werden kann. Die Angabe einer Panning Domain
+        für das zweite Anzeigegerät:
+
+          "1600x1200, 1024x768 @1024x1200"
+
+        ermöglicht den Zugriff auf einen toten Bereich, indem der
+        1024x768 Viewport in der 1024x1200 Panning Domain nach oben und
+        unten verschoben werden kann.
+
+        Offsets können in Verbindung mit Panning Domains zur
+        Positionierung der Panning Domains im virtuellen Anzeigebereich
+        genutzt werden (bitte beachten Sie, dass das Offset die Panning
+        Domain beschreibt und den Viewport nur insoweit betrifft als der
+        Viewport innerhalb der Panning Domain enthalten sein muss).
+
+        Nachfolgend werden zum Beispiel zwei Modi beschrieben, von denen
+        jeder eine Panning Domain mit einer Breite von 1900 Pixeln hat
+        und das zweite Display unterhalb des ersten positioniert wird.
+
+          "1600x1200 @1900x1200 +0+0, 1024x768 @1900x768 +0+1200"
+
+        Wird kein MetaMode String spezifiziert, verwendet der X Treiber
+        diejenigen Modi, die in der relevanten "Bildschirm" Subsection
+        aufgeführt sind, um entsprechende, passende Modi für jedes 
+        Anzeigegerät zu erhalten.
+
+
+  o TwinViewOrientation
+        Diese Option kontrolliert die Positionierung des zweiten
+        Bildschirms in Relation zum ersten Bildschirm innerhalb des
+        virtuellen X Bildschirms, wenn in den MetaModi keine Offsets
+        explizit angegeben werden. Die möglichen Werte sind:
+
+          "RightOf" (der Standard)
+          "LeftOf"
+          "Above"
+          "Below"
+          "Clone"
+
+        Wird "Clone" (Klonen) spezifiziert, wird beiden Anzeigegeräten
+        ein Offset von 0,0 zugewiesen.
+
+
+  o ConnectedMonitor
+        Diese Option erlaubt es, die Geräteerkennung des NVIDIA Kernel
+        Moduls zu überbrücken. (siehe XFree86 Optionen weiter oben).
+
+
+Wie bei allen XF86Config Einträgen, werden Leerzeichen ignoriert und
+alle Einträge sind unabhängig von der Groß-/Kleinschreibung.
+
+
+TWINVIEW FAQS - HÄUFIG GESTELLTE FRAGEN
+
+
+F:  Auf meinem zweiten Monitor erscheint nichts, wieso?
+
+A:  Bildschirme, die keine DDC Bildschirmerkennung unterstützen (dazu
+    gehören die meisten älteren Monitore) können von Ihrer NVIDIA Karte
+    nicht erkannt werden. Sie müssen die Art des angeschlossenen
+    Monitors explizit mit der Option "Connected Monitor" angeben, z.B.:
+
+        Option "ConnectedMonitor" "CRT, CRT"
+
+
+F:  Sind die Window Manager in der Lage, Fenster ordnungsgemäß zu
+    platzieren (kann es zum Beispiel vermieden werden, die Fenster auf
+    beiden Bildschirmgeräten aufzuteilen oder Fenster in Bereiche des
+    virtuellen Desktops zu setzen, die nicht zugänglich sind)?
+
+A:  Ja. Der NVIDIA X Treiber stellt eine Xinerama Erweiterung bereit,
+    die es X Clients (wie Window Managern) erlaubt, mit einem Aufruf
+    von XineramaQueryScreens() die aktuelle TwinView Konfiguration zu
+    ermitteln. Bitte beachten Sie dabei, dass das Xinerama Protokoll
+    die Clients nicht über Konfigurationsänderungen informieren kann.
+    Wenn Sie also zu einem anderen MetaMode wechseln, nimmt Ihr Window
+    Manager immer noch an, dass Sie die vorherige Konfiguration gültig
+    ist. Wenn die Xinerama Erweiterung zusammen mit der XF86VidMode
+    Erweiterung zur Erzeugung von Modeswitch Events verwendet wird,
+    sollten die Window Manager in der Lage sein, die entsprechende
+    TwinView Konfiguration zu jeder Zeit zu ermitteln. Leider werden
+    die durch XineramaQueryScreens() bereitgestellten Informationen
+    von einigen Window Managern nicht korrekt interpretiert; um mit
+    solchen, fehlerhaften Window Managern arbeiten zu können, bietet
+    sich die Möglichkeit, die Bereitstellung von TwinView Layout
+    Daten mit der "NoTwinXineramaInfo" XF86Config Option abzustellen.
+
+    Eine weitere Lösung zur Vermeidung von nicht zugänglichen Bereich
+    des virtuellen Bildschirms ist die Verwendung von Panning Domains
+    (siehe oben).
+
+    Beachten Sie ausserdem, dass der NVIDIA Treiber seine eigene
+    Xinerama Erweiterung nicht bereitstellen kann, wenn bereits die
+    XFree86 Xinerama Erweiterung in der XF86Config Datei oder durch
+    eine Kommandozeilen Option geladen wurde. Um sicherzustellen, dass
+    das nicht der Fall ist, stellen Sie sicher, dass der X Server in
+    der /var/log/XFree86.0.log Logdatei nicht folgende Zeile ausgibt:
+
+      (++) Xinerama: enabled
+
+
+F:  Warum kann ich mit meiner GeForce2 MX keine Auflösung von 1600x1200
+    auf dem zweiten Monitor erzielen?
+
+A:  Aufgrund der Tatsache, dass das zweite Anzeigegerät der GeForce2 MX
+    für einen digitalen Flachbildschirm entwickelt wurde, ist der
+    Pixeltakt nur 150MHz. Das begrenzt die Auflösung für das zweite
+    Anzeigegerät effektiv auf einen Bereich von ungefähr 1280x1024.
+    (Beschreibung über die Beschränkung der programmierbaren Modi durch
+    Pixeltakt-Frequenzen erhalten Sie in XFree86 Video Timings HOWTO).
+    Diese Einschränkung ist in GeForce4 Chips nicht vorhanden.
+
+
+F:  Arbeiten Video Overlays auf beiden Bildschirmgeräten?
+
+A:  Hardware Video Overlays arbeiten nur auf dem ersten Bildschirmgerät.
+    Die aktuelle Lösung besteht darin, dass Blitted Video statt TwinView
+    eingesetzt wird.
+
+
+F:  Wie werden die virtuellen Bildschirmdimensionen in TwinView ermittelt?
+
+A:  Nachdem alle angeforderten Modi bestätigt wurden und die Offsets für
+    jeden Viewport des MetaModes berechnet wurden, berechnet der NVIDIA
+    Treiber das Begrenzungsrechteck der Panning Domains für jeden
+    einzelnen MetaMode. Die maximale Breite und Höhe des Rechtecks wird
+    dann ermittelt.
+
+    Bitte beachten Sie, dass ein Nebeneffekt dieses Vorganges ist, dass
+    die virtuelle Breite und  Höhe aus verschiedenen MetaModi erzeugt
+    wird. Wenn wir den folgenden MetaMode String annehmen:
+
+        "1600x1200,NULL; 1024x768+0+0, 1024x768+0+768"
+
+    ist die daraus resultierende virtuelle Bildschirmgröße 1600 x 1536.
+
+
+F:  Kann ich Vollbildspiele über beide Bildschirme verteilt spielen?
+
+A:  Ja. Obwohl die Details der Konfiguration von Spiel zu Spiel variieren
+    liegt die grundsätzliche Idee darin, dass ein MetaMode X einen Modus
+    übergibt, dessen Auflösung das Begrenzungsrechteck der Viewports für
+    diesen MetaMode ist. Zum Beispiel:
+
+        Option "MetaModes" "1024x768,1024x768; 800x600,800x600"
+        Option "TwinViewOrientation" "RightOf"
+
+    erzeugt zwei Modi: einen mit einer Auflösung von 2024x768 und einen
+    weiteren mit einer Auflösung von 1600x600. Spiele wie Quake 3 Arena
+    verwenden die VidMode Erweiterung zur Ermittlung der Auflösungen der
+    aktuell verfügbaren Modi. Um Quake 3 Arena so zu konfigurieren, dass
+    der obige MetaMode String verwendet wird, fügen Sie Ihrer
+    q3config.cfg Datei die folgenden Elemente hinzu:
+
+        seta r_customaspect "1"
+        seta r_customheight "600"
+        seta r_customwidth "1600"
+        seta r_fullscreen  "1"
+        seta r_mode "-1"
+
+    Bitte beachten Sie, dass die obige Konfiguration kein Modus mit
+    einer Auflösung von 800x600 hat (bitte denken Sie daran, dass der
+    MetaMode "800x600, 800x600" eine Auflösung von 1600x600 hat);
+    falls Sie also die zu verwendende Auflösung für Quake 3 Arena auf
+    800x600 ändern, wird das Spiel im linken unteren Bereich Ihres
+    Bildschirms angezeigt und der Rest des Bildschirms grau unterlegt.
+    Damit ebenfalls zwei einzelne Head Modi verfügbar sind, kann ein
+    geeigneter MetaMode zum Beispiel wie folgt aussehen:
+
+        "800x600,800x600; 1024x768,NULL; 800x600,NULL; 640x480,NULL"
+
+    Genauere Informationen über die Konfiguration spezifischer Spiele
+    sprengt den Rahmen dieses Dokumentes, die obigen Beispiele und
+    zahlreiche Onlinequellen sollten aber ausreichen, um Sie in die
+    korrekte Richtung zu weisen.
+
+
+__________________________________________________________________________
+
+(anh-j)  ANHANG J: TV-OUT KONFIGURATION
+__________________________________________________________________________
+
+Videokarten auf Basis von NVIDIA GPUs mit einem TV-Out (S-Video) Ausgang
+können benutzt werden, um einen Fernseher genau wie einen CRT oder einen
+digitalen Flachbildschirm zu betreiben. 
+
+Der Fernseher kann (auf geeigneten Videokarten) in Verbindung mit einem
+weiteren Bildschirmgerät in einer TwinView Konfiguration genutzt werden.
+
+Ist der Fernseher das einzige mit Ihrer Grafikkarte verbundene Gerät,
+wird es als primäre Anzeige benutzt, wenn Sie Ihr System neu starten
+(die Konsole erscheint auf dem Fernseher als sei er ein CRT). Wenn Sie
+Ihren Fernseher zusammen mit X nutzen, gibt es einige Parameter in Ihrer
+XF86Config Datei, denen Sie besondere Aufmerksamkeit widmen sollten.
+
+  o Die VertRefresh und HorizSync Werte in Ihrer Monitorsektion;
+    bitte achten Sie darauf, dass diese für Ihren Fernseher geeignet
+    sind. Die Werte sind im Allgemeinen:
+
+        HorizSync 30-50
+        VertRefresh 60
+
+  o Den Modus in Ihrer Screen Section, die einzigen gültigen Werte für
+    den Fernseher sind 640x480 und 800x600 und möglicherweise 1024x768,
+    wenn der TV Encoder auf Ihrer Videokarte ein BrookTree871 ist; Ihre
+    XFree86 Log Datei sollte die Information geben, welchen Encoder Sie
+    haben, achten Sie auf die Zeile:
+
+    "(--) NVIDIA(0): TV Encoder detected as") (erkannter TV Encoder).
+
+  o Die Option "TVStandard" sollte der Screen Section angegeben werden;
+    gültige Werte sind:
+
+        "PAL-B"  : Belgien, Dänemark, Finnland, Deutschland, Guinea,
+                   Hongkong, Indien, Indonesien, Italien, Malaysia,
+                   die Niederlanden, Norwegen, Portugal, Singapur,
+                   Spanien, Schweden und der Schweiz.
+        "PAL-D"  : China und Nordkorea
+        "PAL-G"  : Dänemark, Finnland, Deutschland, Italien, Malaysia,
+                   die Niederlanden, Norwegen, Portugal, Spanien,
+                   Schweden und der Schweiz
+        "PAL-H"  : Belgien
+        "PAL-I"  : Hongkong, Vereinigtes Königreich
+        "PAL-K1" : Guinea
+        "PAL-M"  : Brasilien
+        "PAL-N"  : Frankreich, Paraguay und Uruguay
+        "PAL-NC" : Argentinien
+        "NTSC-J" : Japan
+        "NTSC-M" : Kanada, Chile, Kolumbien, Costa Rica, Ecuador, Haiti,
+                   Honduras, Mexiko, Panama, Puerto Rico, Südkorea,
+                   Taiwan, den Vereinigten Staaten von Amerika und
+                   Venezuela
+
+    Die Zeile in Ihrer XF86Confi Datei sollte etwa wie folgt aussehen:
+
+        Option "TVStandard" "NTSC-M"
+
+    Falls Sie keinen oder einen ungültiben TVStandard angeben wird als
+    Standard "NTSC-M" verwendet. Bitte beachten Sie: sollte das Land, in
+    dem Sie leben, nicht in der obigen Liste enthalten sein, suchen Sie
+    bitte das Land aus, das am nächsten zu Ihnen gelegen ist.
+
+
+  o Benutzen Sie die  Option "ConnectedMonitor" , um X anzuweisen, den
+    Fernseher als Bildschirm zu verwenden. Das sollte nur dann nötig
+    sein, wenn Ihr Fernseher nicht von der Videokarte erkannt wird oder
+    Sie einen CRT (oder digitalen Flachbildschirm) nutzen aber X die
+    Anweisung geben wollen, den Fernseher zu verwenden. Die Zeile in
+    Ihrer Config Datei sollte wie folgt lauten:
+
+        Option "ConnectedMonitor" "TV"
+
+
+  o Die Option "TVOutFormat" kann genutzt werden, um eine SVIDEO oder
+    COMPOSITE Ausgabe zu erzeugen. Ansonsten erkennt der Treiber das
+    Ausgabeformat automatisch. Leider tut er das nicht immer richtig.
+    Das Ausgabeformat kann mit den folgenden Optionen erzwungen werden:
+
+        Option "TVOutFormat" "SVIDEO"
+
+    oder
+
+        Option "TVOutFormat" "COMPOSITE"
+
+__________________________________________________________________________
+
+(anh-k)  ANHANG K: LAPTOP KONFIGURATION
+__________________________________________________________________________
+
+INSTALLATION UND KONFIGURATION
+
+Die Installation und Konfiguration der beschleunigten NVIDIA Treiber ist
+auf Laptops identisch mit der jedes andere Desktop Systems, mit Ausnahme
+einiger kleiner Unterschiede, die folgend aufgelisted sind.
+
+Beginnend mit Version 1.0-3122 des Treibers werden Informationen
+über den internen Flachbildschirm anhand von im Video BIOS gespeicherten
+Informationen dynamisch berechnet. Das kann durch das Setzen der Option
+"SoftEDIDs" auf 0 verhindert werden. Falls "SoftEDIDs" deaktiviert ist,
+werden festgelegte Daten aus diversen Tabellen extrahiert, basierend auf
+dem Wert der "Mobile" Kerneloption.
+
+Die "Mobile" Kerneloption akzeptiert die folgenden Werte:
+
+    0xFFFFFFFF : automatische Ermittlung der korrekten Werte
+             1 : Dell laptops
+             2 : non-Compal Toshiba laptops
+             3 : all other laptops
+             4 : Compal Toshiba laptops
+             5 : Gateway laptops
+
+Wie bereits erwähnt wird diese Option lediglich dann benötigt, wenn die
+Option "SoftEDIDs" deaktiviert ist; wenn diese aktiviert ist ist es in
+der Regel am sichersten, die Ermittlung des korrekten Wertes dem Kernel
+Modul zu überlassen (das ist standardmässig der Fall).
+
+Sollten Sie den Wert einer der beiden Optionen ändern müssen, so können
+Sie dies wie folgt tun:
+
+    o durch Änderung von os-registry.c im NVIDIA_kernel Paket
+
+    o durch Übergabe des Wertes mit der modprobe Kommandozeile
+      (z.B. modprobe NVdriver NVreg_SoftEDIDs=0 NVreg_Mobile=3)
+
+    o durch das Hinzufügen einer "options" Zeile in Ihrer modprobe
+      Konfigurationsdatei, in der Regel /etc/modules.conf
+      (z.B. options NVdriver NVreg_Mobile=5)
+
+
+WEITERE FUNKTIONEN
+
+TWINVIEW
+
+Alle NVIDIA Notebook Chipsätze unterstützen TwinView. TwinView wird auf
+Laptops ganauso konfiguriert, wie auf Desktop Systemen (bitte lesen Sie
+dazu ANHANG I weiter oben); beachten Sie dabei, dass bei einer TwinView
+Konfiguration mit dem internen Flachbildschirm des Notebooks und einem
+externen CRT, der CRT Monitor das primäre Anzeigegerät ist (geben Sie
+die HorizSync und VertRefresh Bereiche in der Monitorsektion an), der
+interne Flachbildschirm das Sekundäre (geben Sie dessen HorizSync und 
+VertRefresh mit SecondMonitorHorizSync und SecondMonitorVertRefresh an).
+Sie können ebenfalls die UseEdidFreqs Option benutzen um diese Bereiche
+automatisch zu ermitteln (das sollten Sie allerdings nur dann tun, wenn
+Sie sich sicher sind, dass Sie den EDID Informationen Ihres Monitors
+trauen können; bitte lesen Sie ANHANG D für weitere Informationen).
+
+
+
+HOTKEY SWITCHING VON BILDSCHIRMGERÄTEN
+
+Neben TwinView haben NVIDIA Notebook Chipsätze ausserdem die Möglichkeit
+auf LCD/CRT Hotkey Ereignisse zu reagieren, um zwischen angeschlossenen
+Bildschirmgeräten und jeder möglichen Kombination der angeschlossenen
+Anzeigegeräte hin und herzuschalten (bitte beachten Sie, dass nur zwei
+Geräte gleichzeitig aktiv sein können. TwinView in Ihrer XFree86 Config
+Datei konfiguriert und die Hotkeyfunktion schließen sich gegenseitig aus
+- falls Sie TwinView in Ihrer XF86Config Datei aktivieren, ignoriert der
+NVIDIA X Treiber LCD/CRT Hotkeyevents.
+
+Ein weiterer wichtiger Aspekt der Hotkeyfunktion ist die Möglichkeit der
+dynamischen Anbindung und des Entfernens von Geräten an/von Ihrem Laptop
+- und per Hotkey zu ihnen zu wechseln ohne X neu zu starten.
+
+Ein wichtiger Punkt ist die Bestätigung und Festlegung der auf jedem
+Bildschirmgerät zu programmierenden Modi. Es ist zunächst einmal äußerst
+hilfreich, UseEdidFreqs zu verwenden, so dass Hsync und Vrefresh für
+jedes Gerät aus den EDID gezogen werden können - die Semantik über die
+Bedeutung der Inhalte der Monitor Section verändert sich sonst mit jedem
+Hotkeyevent.
+
+Sobald X gestartet wird oder eine Veränderung in der Liste der
+angeschlossenen Bildschirmgeräte auftritt, wird eine neue Hotkey Sequenz
+konstruiert - in dieser Sequenz wird aufgeführt, welche Bildschirmgeräte
+bei jedem Hotkey Ereignis eingesetzt werden. Tritt ein Hotkey Event ein,
+wird der nächste Hotkey Status in der Sequenz ausgewählt. Jeder Modus,
+der in der XF86Config Datei angefragt wird, wird in Anbetracht der
+Leistungsgrenzen jedes Anzeigegeräts bestätigt, die resultierenden Modi
+werden dem entsprechende Gerät zur Verfügung gestellt. Sollen mehrere
+Bildschirme gleichzeitig aktiv sein, werden die Modi der einzelnen
+Anzeigegeräte zusammengelegt. Kann keine genaue Übereinstimmung gefunden
+werden (gleiche Auflösung), wird das nächstgelegene Element gesuch und
+das Anzeigegerät mit der geringeren Auflösung in die Auflösung des
+anderen Bildschirmgerätes verschoben.
+
+Erfolgt das Wechseln von virtuellen Konsolen außerhalb von X, wird die
+VGA Konsole immmer auf dem Bildschirmgerät wiederhergestellt, auf dem
+es vorhanden war, als X gestartet wurde. Erfolgt das Wechsel zurück
+nach X, so wird die gleiche Konfiguration wiederhergestellt, die beim
+Verlassen von X verwendet wurde; das ist  unabhängig davon, welche
+Hotkey Ereignisse in der Zwischenzeit erfolgt sind.
+
+
+NICHT-STANDARD MODI AUF LCD DISPLAYS
+
+Einige Benutzer haben Probleme, den Modus 1400x1050 zu programmieren
+(die native Auflösung einiger Laptop LCDs). In der Version 4.0.3 wurden
+der Datenbank der Standardmodi von XFree86 mehrere 1400x1050 Modi
+hinzugefügt. Nachfolgend finden Sie eine Moduszeile, die Sie verwenden
+können, falls Sie eine ältere Version von XFree86 verwenden:
+
+# -- 1400x1050 --
+# 1400x1050 @ 60Hz, 65.8 kHz hsync
+Modeline "1400x1050" 129 1400 1464 1656 1960
+                         1050 1051 1054 1100 +HSync +VSync
+
+
+BEKANNTE LAPTOP PROBLEME
+
+  o Power Management wird gegenwärtig nicht unterstützt.
+  o LCD/CRT Hotkey Switching auf den Satellite 2800 Series Laptops von
+    Toshiba funktioniert gegenwärtig nicht.
+  o TwinView auf Satellite 2800 Series Toshiba Laptops funktioniert
+    gegenwärtig nicht.
+  o Video Overlay funktioniert nur auf dem ersten Bildschirmgerät, auf
+    dem X gestartet wird. Wird X zum Beispiel auf dem internen LCD
+    gestartet und Sie lassen zunächst eine Video Anwendung laufen, die
+    Video Overlay verwendet (d.h., die den "Video Overlay" Adapter
+    verwendet, der durch die XV Erweiterung angeboten wird) und nehmen
+    dann einen Hotkey Wechsel für das Hinzufügen eines zweiten Geräts
+    vor, wird das Video nicht auf der zweiten Anzeige erscheinen. Um
+    dies zu umgehen, können Sie entweder die Video Anwendung so 
+    konfigurieren, dass sie den "Video Blitter" Adapter verwendet, der
+    durch die XV Erweiterung angeboten wird (diese ist immer verfügbar)
+    oder per Hotkey Switch zu dem Anzeigegerät wechseln, auf dem Sie 
+    das Video Overlay nutzen wollen, bevor X gestartet wird.
+
+
+__________________________________________________________________________
+
+(anh-l)  ANHANG L: VIDEO MODE PROGRAMMIERUNG
+__________________________________________________________________________
+
+Die beschleunigten NVIDIA Linux Treiber unterstützen alle Stanard VGA
+und VESA Modi und darüber hinaus die meisten per Hand angepassten Mode
+Zeilen; Dualscan Modi werden auf sämtlicher Hardware unterstützt,
+Interlace Modi auf: GeForce 256, GeForce DDR, Quadro, GeForce2 GTS/Pro,
+GeForce2 Ti, GeForce2 Ultra, Quadro2 Pro, and all TNT products.
+
+Im Allgemeinen wird Ihr Anzeigegerät (Monitor/Flachbild/Fernseher) den
+Rahmen der möglichen Videomodi stärker einschränken als Ihre NVIDIA
+GPU basierte Grafikkarte oder die beschleunigten NVIDIA Linux Treiber.
+
+Um einen oder mehrere Standardmodi zur Verwendung in X anzufordern,
+können Sie ganz einfach eine "Modes" Zeile wie die folgende hinzufügen.
+
+Modes "1600x1200" "1024x768" "640x480"
+
+und zwar in der entsprechenden Bildschirm Subsection Ihrer XF86Config
+Datei (Details hierüber finden Sie in den man Seiten XF86Config(4/5).
+Die folgenden Ausführungen sind primär dann von Interesse, wenn Sie
+Ihre eigenen angepassten Mode Zeilen erstellen, mit xvidtune (1) 
+experimentieren wollen oder ganz einfach daran interessiert sind, mehr
+zu erfahren.
+
+Bitte beachten Sie, dass diese Ausführungen weder eine Erklärung noch
+eine Richtlinie für die hohe Kunst des Erstellens von angepassten Mode
+Zeilen für XFree86 sind. Wir überlassen detaillierte Beschreibungen
+Dokumentationen wie der XFree86 Video Timings HOWTO.
+
+
+FARBTIEFE, BITS PRO PIXEL UND PITCH
+
+Obwohl bei der Programmierung von Modi nicht direkt von Interesse, sind
+die pro Pixel verwendeten Bits bei der Berücksichtigung der maximal
+programmierbaren Auflösung ein Thema; aus diesem Grunde ist es sinnvoll,
+auf die Begriffe "depth" (Farbtiefe) und "bits per pixel" einzugehen.
+Die Tiefe stellt die Anzahl der Datenbits dar, die pro Pixel gespeichert
+werden. Unterstützte Tiefen sind 8, 15, 16 und 24.
+
+Der Großteil der Videohardware speichert die Pixeldaten in Größen von 8,
+16 oder 32 Bit; dies ist die Speichermenge, die jedem Pixel zugewiesen
+wird. Wenn Sie die Tiefe spezifizieren, wählt X die Bit pro Pixel (bpp)
+Größe, in der die Daten gespeichert werden sollen. Nachfolgend finden
+Sie eine Tabelle, welche bpp für jede mögliche Tiefe verwendet werden.
+
+        depth   bpp
+        =====  =====
+          8      8
+         15     16
+         16     16
+         24     32
+
+"Pitch" legt fest, wie viele Bytes im linearen Frame Buffer zwischen den
+Daten eines Pixels und den Daten des nächsten direkt darunterliegenden
+Pixels liegen. Sie können sich diese als horizontale Auflösung mit der
+Anzahl von Bytes pro Pixel multipliziert vorstellen. In der Praxis kann
+der Pitch mehr als dieses Produkt sein, da die Video Hardware oftmals
+die Anforderung stellt, dass ein Pitch ein Vielfaches eines Wertes ist.
+
+
+MAXIMALE AUFLÖSUNGEN
+
+Die beschleunigten NVIDIA Linux Treiber und auf NVIDIA GPUs basierende
+Grafikkarten untestützen Auflösungen bis zu 2048x1536. Dabei ist jedoch
+zu beachten, dass die maximale, durch Ihr System unterstützte Auflösung
+auch von der Grösse des Video RAMs (siehe NÜTZLICHE FORMELN) und der
+durch Ihren Monitor/Flachbildschirm/Fernseher unterstützten, maximalen
+Auflösung abhängt.
+
+Bitte beachten Sie auch, dass Video Overlays die maximale Auflösung und
+Bildwiederholfrequenz zwar nicht einschränken, die Speicherbandbreite,
+die von dem programmierten Modus in Anspruch genommen wird, sich aber
+auf die Qualität der Overlays negativ auswirken kann.
+
+
+NÜTZLICHE FORMELN
+
+Die maximale Auflösung ist sowohl eine Funktion der Grösse des Video
+RAMs als auch der Bits pro Pixel, die Sie zur Verwendung auswählen:
+
+        HR * VR * (bpp/8) = verwendeter Videospeicher
+
+In anderen Worten, die Menge des verwendeten Video RAMs entspricht
+der horizontalen Auflösung (HR) multipliziert mit der Vertikalen (VR)
+und den Bytes pro Pixel. Technisch gesehen stellt der verwendete RAM
+eigentlich die Pitch Zeiten der vertikalen Auflösung dar und kann
+geringfügig größer als (HR * (bpp/8)) sein, um Hardwareanforderungen
+zu genügen, die erfordern, dass der Pitch ein Vielfaches eines
+gegebenen Wertes sei.
+
+Bitte beachten Sie, dass dies nur die Speicherverwendung für den Frame
+Buffer darstellt, der Videospeicher wird auch von anderen Dingen wie
+OpenGL oder Pixmap Caching verwendet.
+
+Eine weitere wichtige Beziehung besteht zwischen der Auflösung, dem
+Pixeltakt (dot clock) und der vertikalen Bildwiederholfrequenz:
+
+        RR = PCLK / (HFL * VFL)
+
+In anderen Worten ist die Bildwiederholfrequenz (Refresh Rate) gleich
+dem Pixeltakt (PCLK) geteilt durch die Gesamtzahl der Pixel: die
+horizontale Framelänge (HFL) multipliziert mit der Vertikalen (VFL).
+Bitte beachten Sie, dass dies die Framelängen und nicht nur die
+sichtbaren Auflösungen sind. Wie in der XFree86 Video Timings HOWTO
+beschrieben, kann die obige Formel umgeschrieben werden:
+
+        PCLK = RR * HFL * VFL
+
+Sie können bei einem gegebenen maximalen Pixeltakt die RR, HFL und VFL
+wie gewünscht anpassen, solange das Produkt der drei konsistent ist.
+Der Pixeltakt ist in der Logdatei aufgeführt, wenn Sie X mit Verbose
+Logging ausführen: (startx -- -logverbose 5).
+
+Ihre XFree86 Logdatei (XFree86.0.log) sollte mehrere Zeilen ähnlich der
+Folgenden enthalten:
+
+(--) NVIDIA(0): Display Device 0: maximum pixel clock at  8 bpp: 350 MHz
+(--) NVIDIA(0): Display Device 0: maximum pixel clock at 16 bpp: 350 MHz
+(--) NVIDIA(0): Display Device 0: maximum pixel clock at 32 bpp: 300 MHz
+
+welche den maximalen Pixeltakt bei jedem Bit pro Pixelgröße angeben.
+
+
+VALIDIERUNG VON MODI
+
+Während der PreInit Phase des X Servers überprüft der NVIDIA X-Treiber
+alle angeforderten Modi durch die folgende Vorgehensweise:
+
+  o Nimmt den Schnitt der HorizSync und VertRefresh Bereiche, die vom 
+    Benutzer in der XF86Config und der Bereiche, die vom Monitor in der
+    EDID angegeben wurden. Dieses Verhalten kann durch die Verwendung
+    der Option "Ignore EDID" deaktivert werden. Dann aktzeptiert der X
+    Server blind die vom Benutzer angegebenen Bereiche.
+
+  o Aufrufen der xf86ValidateModes() Helferfunktion, die Modi mit den
+    Namen findet, die der Benutzer in der XF86Config Datei angegeben hat
+    und entfernt Modi mit ungültigen Horizontal Sync Frequenzen oder
+    ungültigen Vertical Refresh Rates, Pixeltakten, die den maximalen
+    Pixeltakt der Videokarte überschreiten oder Auflösungen, die größer
+    als die virtuelle Bildschirmgröße sing (wenn eine solche in der XF86
+    Config Datei festgelegt wurde).
+
+    Es werden verschiedene andere Leistungsgrenzen beachtet; siehe:
+    xc/programs/Xserver/hw/xfree86/common/xf86Mode.c:xf86ValidateModes().
+
+  o Alle von xf86ValidateModes() zurückgesandten Modi werden dann erneut
+    überprüft, um sicherzustellen, dass keine Auflösung den größten EDID
+    Modus überschreitet (dieses Verhalten  kann durch die "IgnoreEDID"
+    Option deaktiviert werden. Falls der Bildschirm ein Fernseher ist,
+    wird jeder Modus überprüft, um sicherzustellen, dass die Auflösung
+    vom TV Encoder unterstützt wird (in der Regel werden nur 800x600 und
+    640x480 vom Encoder unterstützt).
+
+  o Alle verbleibenden Modi werden dann darauf hin überprüft, dass sie
+    die weiter unten in WEITERE MODUS EINSCHRÄNKUNGEN beschriebenen
+    Einschränkungen einhalten.
+
+Die letzten beiden Schritte werden auch durchgeführt, bevor gegebene
+Modi programmiert werden, damit auch potentiell ungültige, durch die
+XF86VidModeExtension (z.B. xvidtune(1)) übergebene Modi rechtzeitig
+erkannt werden. Für TwinView wird die obige Validierung für die für
+jedes einzelne Bildschirmgerät angeforderten Modi durchgeführt.
+
+
+WEITERE MODUS GRENZBEDINGUNGEN
+
+Bitte lesen Sie den Abschitt ADDITIONAL MODE CONSTRAINTS in der README
+für weitere Informationen zur Mode Validierung.
+
+
+SIEHE AUCH:
+
+    Ein XFree86 Moduszeilengenerator, der dem GTF Standard entspricht,
+    wurde an die XFree86 Xpert Mailing Liste geschickt.
+
+    http://www.xfree86.org/pipermail/xpert/2001-October/012070.html
+
+    Eine Suche nach weiteren Modezeilengeneratoren ist unter "modeline"
+    auf freshmeat.net möglich.
+
+
+__________________________________________________________________________
+
+(anh-m)  ANHANG M: PAGE FLIPPING, WINDOW FLIPPING UND UBB
+__________________________________________________________________________
+
+Beginnend mit der Version 1.0-2313 unterstützten die beschleunigten 
+NVIDIA Linux Treiber UBB (Unified Back Buffer), Page Flipping und
+Window Flipping. In bestimmten Situationen können diese Funktionen
+Performancesteigerungen hervorrufen.
+
+Nachfolgend finden Sie eine Beschreibung der einzelnen Funktionen:
+
+  o Page Flipping: Diese Funktion ist auf GeForce und neuerer Hardware
+        Hardware (nicht auf TNT/TNT2 Produkten) verfügbar und wird im
+        Falle einer einzelnen sichtbaren Vollbild OpenGL Anwendung beim
+        synchronisieren mit vblank aktiviert. Das Wechseln der Buffer
+        wird durch das Wechseln des jeweils vom DAC gescannten Buffers
+        und nicht durch das Kopieren des Back Buffers in den Front
+        Buffer erzielt. Dieser Mechanismus ist viel leistungsfähiger
+        und ermöglicht verlustfreies Wechseln während eines
+        Strahlrücklaufs (falls __GL_SYNC_TO_VBLANK eingestellt ist).
+        Dieses Leistungsmerkmal kann durch die PageFlip XF86Config
+        Option deaktiviert werden.
+
+  o Unified Back Buffer (UBB): UBB ist nur auf Quadro Karten verfügbar
+        (mit Ausnahme der Quadro4 200 und Quadro4 400NVS Grafikkarten)
+        und wird standardmäßig aktiviert, wenn genügend Videospeicher
+        zur Verfügung steht. Dieses Verhalten kann mit der in ANHANG D
+        beschriebenen XF86Config Option UBB deaktiviert werden. Sobald
+        UBB aktiviert ist, teilen sich alle Fenster den gleichen Back,
+        Stencil und Depth Buffer.
+        Sind viele Fenster geöffnet, überschreitet die Back, Stencil
+        und Depth Nutzung niemals die von einem Vollbildfenster
+        genutzte Größe. Allerdings entspricht die Back, Stencil und
+        Depth Nutzung selbst bei einem einzelnen kleinen Fenster der
+        eines Vollbildfensters, so dass in diesem Fall der Video RAM
+        weniger effizient genutzt werden kann als ohne UBB.
+
+  o Window Flipping: Diese Funktion erfordert UBB und ist nur auf
+        Quadro Karten verfügbar. Mit einem einzelnen OpenGL Fenster
+        können die Buffer dieses Fensters durch das Wechseln des vom
+        DAC gescannten Buffers gewechselt werden, anstatt den Inhalt
+        des Back Buffers in den Front Buffer kopieren zu müssen. Dies
+        ist dem Page Flipping ähnlich, jedoch ohne die Einschränkung,
+        dass das Fenster sichtbar und im Vollbild sein muss.
+
+        Dies funktioniert nur mit einem einzelnen OpenGL Fenster.
+        Standardmässig ist Window Flipping deaktivert und kann mit
+        der in ANHANG D beschriebenen XF86Config Option "WindowFlip"
+        aktiviert werden.
+
+
+__________________________________________________________________________
+
+(anh-n)  ANHANG N: BEKANNTE PROBLEME
+__________________________________________________________________________
+
+Folgende Probleme sind bekannt und werden in der Zukunft behoben werden:
+
+  o OpenGL + Xinerama
+        Gegenwärtig funktioniert OpenGL nicht zusammen mit Xinerama.
+
+  o OpenGL und dlopen()
+        Es existieren einige Problemfälle mit älteren Versionen des
+        dynamischen Laders glibc (zum Beispiel die Version, die mit
+        RedHat 7.2 ausgeliefert wird) und Applikationen wie Quake3
+        und Radiant, die dlopen() verwenden. Weitere Details finden
+        HÄUFIG GESTELLTE FRAGEN (FAQ).
+
+  o DPMS und TwinView
+        Die DPMS Modi "supend" (pausieren) und "standby" (Standby)
+        arbeiten bei der Verwendung von TwinView nicht korrekt auf dem
+        zweiten CRT. Es erscheint ein leerer Bildschirm, der Monitor
+        wird nicht in den angeforderten DPMS Status gesetzt.
+
+  o DPMS und Flachbildschirm
+        Die DPMS Modi "supend" (pausieren) und "standby" (Standby)
+         arbeiten nicht korrekt auf einem Flachbildschirm. Es erscheint
+         ein leerer Bildschirm, der Flachbildschirm wird nicht in den
+         angeforderten DPMS Status gesetzt.
+
+  o Multicard, Multimonitor
+        In einigen Fällen wird die sekundäre Karte nicht korrekt durch
+         das NVdriver Kernelmodul erkannt. Sie können dies durch die
+         Aktivierung des Xfree86 Int10 Moduls umgehen, womit alle
+         sekundären Karten warmgestartet werden. Lesen Sie dazu die
+         Informationen in ANHANG D.
+
+  o Laptop
+        Bitte lesen Sie "Bekannte Laptop Probleme" in ANHANG D, falls
+        Sie ein Notebook verwenden.
+
+  o FSAA
+        Wenn Sie FSAA benutzen (die __GL_FSAA_MODE Umgebungsvariable
+        ist auf einen Wert gesetzt, der FSAA aktiviert und auf ein
+        Multisample Visual setzt), so kann es zu Darstellungsfehlern
+        beim vergrössern/verkleinern des Fensters kommen.
+
+
+HARDWARE PROBLEME
+
+Dieser Abschnitt beschreibt Probleme, die nicht behoben werden können,
+da die Ursache des Problems außerhalb des Einflusses von NVIDIA liegt.
+Nachfolgend finden Sie eine Liste solcher Probleme:
+
+  o Gigabyte GA-6BX Motherbord
+        Dieses Motherbord verwendet einen LinFinity Regler auf einer
+        3,3-V Rail, das nur bis 5 A erlaubt - das unterschreitet die
+        AGP Spezifikation, die 6 A erfordert. Wenn Diagnoseprogramme
+        oder Applikationen ausgeführt werden, steigt die Temperatur
+        des Reglers, wodurch die Spannung auf dem NVIDIA Chip auf bis
+        zu 2,2 V sinkt. Under diesen Umständen ist der Regler nicht
+        in der Lage, den Strom auf dem 3,3-V Rail zu liefern, den der
+        NVIDIA Chip erfordert.
+
+        Dieses Problem tritt nicht auf, wenn das Grafikbord über einen
+        Schaltregler verfügt oder eine externe Stromversorgung mit der
+        3,3 V Rail verbunden ist.
+
+  o VIA KX133 und 694X Chipsätze mit AGP 2x
+        Auf Athlon Motherbords mit dem VIA KX133 oder 694X Chipsatz wie
+        dem ASUS K7V Motherbord, setzen NVIDIA Treiber den AGP 2x Modus
+        als Standard, um die unzureichende Signalstärke zu umgehen.
+
+  o Irongate Chipsätze mit AGP 1x
+        Es werden auf Athlon Motherbords mit dem Irongate Chipsatz AGP
+        1x Transfers verwendet, um ein Problem mit der Signalintegrität
+        des Chipsatzes zu umgehen.
+
+  o ALi Chipsätze, ALi1541 und ALi1647
+        Auf ALi1541 und ALi1647 Chipsätzen deaktivieren die NVIDIA
+        Treiber AGP Unterstützung, um Timing- und Signalintegritäts-
+        Probleme zu umgehen. 
+
+        Lesen Sie dazu "ANHANG G: ALI SPEZIFISCHE PROBLEME".
+
+
+__________________________________________________________________________
+
+(anh-o)  ANHANG O: DAS PROC INTERFACE
+__________________________________________________________________________
+
+Das /proc Dateisystem erlaubt es Ihnen, im laufenden Betrieb Informationen
+über den Treiber, installierte NVIDIA Grafikkarted und den AGP Status in
+Erfahrung zu bringen.
+
+Mehrere Dateinen in /proc/driver/nvidia halten diese Informationen bereit.
+Im Folgenden finden Sie eine kurze Beschreibung jeder dieser Dateien:
+
+  o version
+        Gibt die installierte Treiberversion und die Version des GNU C
+        Compilers aus, der benutzt wurde, um das Linux Kernel Modul
+        zu kompilieren.
+
+  o cards/0...3
+        Stellt Details über jede der installierten NVIDIA Grafikkarten
+        bereit (Modell, IRQ, BIOS Version, Bus Typ). Bitte beachten Sie,
+        dass die BIOS Version nur bei laufendem X Server verfügbar ist.
+
+  o agp/card
+        Informationen über die AGP Fähigkeiten der installierten AGP
+        Grafikkarte.
+
+  o agp/host-bridge
+        Informationen über die Host Bridge (Modell und AGP Fähigkeiten).
+
+  o agp/status
+        Der aktuelle AGP Status. Falls Ihr System AGP unterstützt und
+        die nötige Software Unterstützung aktiviert wurde, so werden
+        der verwendete AGP Treiber, die AGP Rate und Informationen über
+        den Status von AGP Fast Writes und Side Band Addressing gezeigt.
+
+        Der AGP Treiber ist NVIDIA (NVIDIAs interner AGP Treiber) oder
+        AGPGART (der Linux Kernel agpgart.o Treiber). Falls Sie neben
+        AGPGART "inactive" sehen, so deutet dies darauf hin, dass der
+        AGP Chipsatz mit AGPGART programmiert wurde, aber momentan nicht
+        genutzt wird.
+
+        SBA und Fast Writes geben an, ob diese AGP Funktionen genutzt
+        werden. Beachten Sie, dass mehrere Faktoren Einfluss darauf
+        haben, ob die entsprechende Funktion aktiviert wird. Zunächst
+        müssen sowohl die AGP Grafikkarte als auch die Host Bridge die
+        Funktion unterstützen. Aber auch falls das der Fall ist kann 
+        sich der Treiber zugunsten verbesserter Systemstabilität dazu
+        entscheiden, die gegebene Funktion zu deaktivieren. Das trifft
+        besonders auf AGP Fast Writes zu.
+
+
+__________________________________________________________________________
+
+(anh-p)  ANHANG P: XVMC UNTERSTÜTZUNG
+__________________________________________________________________________
+
+Diese Version des NVIDIA Linux Treibers beinhaltet libXvMCNVIDIA.a, die
+XvMC (X-Video Motion Compensation) API (1.0) unterstützt.
+
+Diese Bibliothek erlaubt es Anwendungen, die XvMC benutzen MPEG2 Video
+entweder auf XvMCs "motion-compensation" oder "IDCT" Ebenen zu
+beschleunigen. AI44 und IA44 Subpicture werden unterstützt, ebenso 4:2:0
+Surfaces bis zu 2032x2032.
+
+Diese Funktionen werden lediglich auf GeFroce4 MX Karten unterstützt.
+
+libXvMCNVIDIA.a beachtet die XVMC_DEBUG Umgebungsvariable und gibt
+einige Debug Informationen and stderr aus, falls diese auf einen
+geeigneten Integerwert gesetzt wird. '0' deaktivert Debug Ausgaben,
+'1' aktiviert Fehlermeldungen, '2' aktiviert Warnmeldungen.
+
+
+__________________________________________________________________________
+
+(anh-q)  ANHANG Q: GLX UNTERSTÜTZUNG
+__________________________________________________________________________
+
+Diese Version des NVIDIA Treibers für Linux unterstützt GLX 1.2 mit den
+folgenden Erweiterungen:
+
+   GLX_EXT_visual_info
+   GLX_EXT_visual_rating
+   GLX_SGIX_fbconfig
+   GLX_SGIX_pbuffer
+   GLX_ARB_get_proc_address
+
+Für eine Beschreibung dieser Erweiterungen konsultieren Sie bitte die
+OpenGL Erweiterungsdatenbank unter:
+
+    http://oss.sgi.com/projects/ogl-sample/registry/index.html
+
+GLX 1.3 wird noch nicht unterstützt.
+

@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# /etc/rc.d/inetd: start/stop inet daemon
+#
+
+if [ "$1" = "start" ]; then
+    /usr/sbin/inetd
+elif [ "$1" = "stop" ]; then
+    killall -q /usr/sbin/inetd
+else
+    echo "usage: $0 start|stop"
+fi
+
+# End of file

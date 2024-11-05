@@ -1,0 +1,31 @@
+/*
+ * CRUX XFree86 configuration.
+ */
+
+#define DefaultGcc2i386Opt	#CFLAGS# -fno-strength-reduce
+#define TermcapLibrary		-lncurses
+#define SystemManDirectory	/usr/man
+#define ForceNormalLib		YES
+
+#define HasNCurses		YES
+#define HasFreetype2		NO
+#define HasLibpng		NO
+#define HasZlib                 NO
+
+#define BuildLinuxDocText	NO
+#define BuildLinuxDocHtml	NO
+#define BuildLinuxDocPS		NO
+#define BuildHtmlManPages	NO
+
+#define BuildCyrillicFonts	NO
+#define BuildArabicFonts	NO
+#define BuildGreekFonts		NO
+#define BuildHebrewFonts	NO
+
+/*
+#define BuildJapaneseFonts	NO
+#define BuildKoreanFonts	NO
+#define BuildChineseFonts	NO
+*/
+
+/* End of file */

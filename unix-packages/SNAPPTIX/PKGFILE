@@ -1,0 +1,79 @@
+# $Id:
+# Maintainer: Ryan Tolboom <rxt1077@njit.edu>
+
+# Creates a package with the kernel, NVidia modules, framebuffer patches,
+# and ptrace security patch
+name=snapptix-kernel
+version=2.4.20
+release=1
+source=(http://www.kernel.org/pub/linux/kernel/v2.4/linux-${version}.tar.bz2
+	http://download.nvidia.com/XFree86_40/1.0-4191/NVIDIA_kernel-1.0-4191.tar.gz
+	http://home.tvd.be/cr26864/Linux/fbdev/logo.tar.bz2
+	http://www.arnor.net/linuxlogo/download/2417/logo-06.patch.gz
+	vga256fb-12-may-2001-linux-2.4.4.patch.bz2
+	ptrace-2.4.20.patch.bz2
+	kernel_boot.png
+	drbd-3-25-03.tar.bz2
+	.config)
+
+build() {
+	# Patch the kernel for 256 fb support, no cursor blink, and ptrace
+	cd linux-2.4.20
+	bzip2 -cd $SRC/vga256fb-12-may-2001-linux-2.4.4.patch.bz2 | patch -p1
+	gzip -cd $SRC/logo-06.patch.gz | patch -p1
+	bzip2 -cd $SRC/ptrace-2.4.20.patch.gz | patch -p1
+	cd ..
+
+	# Make the conversion tool for our logo
+	cd logo
+	sed -i "s:^#define LINUX_LOGO_WIDTH.*$:#define LINUX_LOGO_WIDTH 320:" pnmtologo.c
+	sed -i "s:^#define LINUX_LOGO_HEIGHT.*$:#define LINUX_LOGO_HEIGHT 240:" pnmtologo.c
+	make pnmtologo
+
+	# Patch the kernel with our new splash image
+	convert $SRC/kernel_boot.png kernel_boot.pnm
+	./pnmtologo kernel_boot.pnm > linux_logo.h.mid
+	COLORS=`grep LINUX_LOGO_COLORS linux_logo.h.mid`
+	sed -i "s:^#define LINUX_LOGO_COLORS.*$::" linux_logo.h.mid
+	sed -n "1,28p" ../linux-2.4.20/include/linux/linux_logo.h | sed "s:^#define LINUX_LOGO_COLORS.*$:$COLORS:" > linux_logo.h
+	cat linux_logo.h.mid >> linux_logo.h
+	sed "1,912d" ../linux-${version}/include/linux/linux_logo.h >> linux_logo.h
+	cp linux_logo.h ../linux-${version}/include/linux/
+	cd ../linux-2.4.20
+	sed -i "s:^#define LOGO_W.*$:#define LOGO_W 320:" drivers/video/fbcon.c
+	sed -i "s:^#define LOGO_H.*$:#define LOGO_H 240:" drivers/video/fbcon.c
+
+	# Compile the kernel
+	cp $SRC/.config .config
+	yes "" | make config
+	make dep modules bzImage
+
+	# Copy it into the package
+	cp arch/i386/boot/bzImage $PKG/vmlinuz
+
+	# Make the directories we need for network module install
+	mkdir -p $PKG/lib/modules/${version}/kernel/drivers/net/tulip
+	mkdir -p $PKG/lib/modules/${version}/kernel/drivers/net/e100
+
+	# Copy the dummy network driver module
+	cp drivers/net/dummy.o $PKG/lib/modules/${version}/kernel/drivers/net/
+
+	# Compile the NVidia kernel module
+	cd ../NVIDIA_kernel-1.0-4191
+	make KERNINC=$SRC/linux-2.4.20/include nvidia.o
+
+	# Copy it into the package
+	mkdir -p $PKG/lib/modules/${version}/kernel/drivers/video
+	cp nvidia.o $PKG/lib/modules/${version}/kernel/drivers/video/
+
+	# Compile the drbd kernel module
+	cd ../drbd/drbd
+	make LINUX=../../linux-2.4.20 drbd.o
+
+	# Copy it into the package
+	mkdir -p $PKG/lib/modules/${version}/kernel/drivers/block
+	cp drbd.o $PKG/lib/modules/${version}/kernel/drivers/block/
+
+	# Make the module dependancies
+	/sbin/depmod -q -b $PKG
+}

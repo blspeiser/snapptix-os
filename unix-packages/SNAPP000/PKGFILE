@@ -1,0 +1,13 @@
+# $Id:
+# Maintainer: Ryan Tolboom <rxt1077@njit.edu>
+
+# Installs our Java GUI from files provided by Mehul
+name=snapptix-gui
+version=0.0.1
+release=1
+source=(snapptix_gui.jar)
+
+build() {
+	mkdir -p $PKG/usr/snapptix/jar
+	cp snapptix_gui.jar $PKG/usr/snapptix/jar
+}

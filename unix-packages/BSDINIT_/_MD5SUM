@@ -1,0 +1,8 @@
+f5b91a141c3114787fc1799dc4d9215a  inittab
+4b38458accfbe80b8a0062595a60b20e  rc
+6121764bd609fda15493c6ff14cc6337  rc.local
+4df074b9cf04ce499dfb31b035135db5  rc.modules
+050dc2990d630075b70cd259ac92be98  rc.multi
+9c6254588db5967f5cd7d069a2422fc1  rc.shutdown
+39202528fd3c19dab4325304ae7cafe6  rc.single
+c6db1d72c3dc4e65e9f899f80e73cccd  snapptix_start.sh

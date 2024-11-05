@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ -d /crux ]; then
+	cd /crux
+	exec ./Setup
+fi
+
+echo "Execute this script from the 'crux' directory."
